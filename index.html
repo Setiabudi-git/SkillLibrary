@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Aexa — Skill Library</title>
+<title>SkillLibrary</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -284,7 +284,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
       <input type="file" id="avatarFileInput" class="avatar-input" accept="image/*">
     </div>
     <div class="header-info">
-      <h1>Your Name</h1>
+      <h1>Andhika</h1>
       <p>Skill &amp; Learning Library</p>
     </div>
     <div class="header-stats">
@@ -357,7 +357,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
       </div>
       <!-- Secret badges section -->
       <div id="bdpSecretSection" style="display:none;">
-        <div class="bdp-section-title" style="color:var(--gold);">🔒 Secret Achievements</div>
+        <div class="bdp-section-title" style="color:var(--gold);">🔓 Secret Achievements</div>
         <div class="bdp-grid" id="bdpSecretGrid"></div>
       </div>
     </div>
@@ -848,7 +848,7 @@ function renderBDP(){
       <div class="bdp-badge-info">
         <div class="bdp-badge-name ${locked?'locked':''}">${b.name}</div>
         <div class="bdp-badge-desc">${b.desc||''}</div>
-        <div class="bdp-badge-status ${locked?'no':'ok'}">${locked?'○ Click to mark achieved':'✓ Unlocked — click to undo'}</div>
+        <div class="bdp-badge-status ${locked?'no':'ok'}">${locked?'○ Unachieved':'✓ Achieved'}</div>
       </div>
       <div style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:2px solid ${locked?'#3a5a7a':st.ac};background:${locked?'transparent':st.ac};display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">${locked?'':'✓'}</div>
     </div>`;
