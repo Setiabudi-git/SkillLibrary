@@ -462,9 +462,10 @@ function hToHM(d){const t=Math.round(d*60);return{h:Math.floor(t/60),m:t%60};}
 function fmtH(d){return(!d||d<=0)?'—':d+' hrs';}
 
 // ── GITHUB GIST SYNC ─────────────────────────────────────────────
-const GIST_ID  = '97d78aa28af003fc4f9490d6639becfe';
-const GIST_TOK = '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';
-const GIST_FILE= 'skill-library-data.json';
+const GIST_ID   = 'b5233c164df483b438fc8989ed4cb9e4';
+const GIST_TOK  = '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';
+const GIST_FILE = 'skill-library-data.json';
+const GIST_OWNER= 'Setiabudi-git';
 let syncTimeout = null;
 
 function setSyncUI(status, msg){
@@ -492,44 +493,40 @@ function showSyncLog(){
 
 async function loadFromGist(){
   setSyncUI('loading','');
-  logSync('Fetching from Gist '+GIST_ID);
+  logSync('Fetching Gist '+GIST_ID);
   try {
-    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`,{
-      cache:'no-store',
-      headers:{
-        'Authorization':`token ${GIST_TOK}`,
-        'Accept':'application/vnd.github.v3+json',
-        'Cache-Control':'no-cache',
+    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      cache: 'no-store',
+      headers: {
+        'Authorization': `Bearer ${GIST_TOK}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
       }
     });
-    logSync('Gist fetch status: '+res.status);
-    const body = await res.json();
-    if(res.status===401){throw new Error('401 Unauthorized — token rejected by GitHub');}
-    if(res.status===403){throw new Error('403 Forbidden — '+( body.message||'rate limit or permissions'));}
-    if(res.status===404){throw new Error('404 — Gist not found. Check GIST_ID');}
-    if(!res.ok){throw new Error('HTTP '+res.status+': '+(body.message||'unknown'));}
-    const fileNames = Object.keys(body.files||{});
-    logSync('Gist files found: ['+(fileNames.join(', ')||'none')+']');
-    const raw = body.files?.[GIST_FILE]?.content;
+    logSync('Status: '+res.status);
+    if(res.status===401) throw new Error('401 — Token rejected. Generate a new token.');
+    if(res.status===403) throw new Error('403 — Forbidden. Check token has gist scope.');
+    if(res.status===404) throw new Error('404 — Gist not found. Check Gist ID.');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const gist = await res.json();
+    const fileNames = Object.keys(gist.files||{});
+    logSync('Files in gist: '+fileNames.join(', '));
+    const raw = gist.files?.[GIST_FILE]?.content;
     if(raw){
-      try{
-        const p = JSON.parse(raw);
-        items  = p.items  || [];
-        banner = p.banner || null;
-        localStorage.setItem(SK, raw);
-        logSync('✓ Loaded '+items.length+' items from Gist');
-      }catch(pe){
-        throw new Error('Gist file exists but JSON is invalid: '+pe.message);
-      }
+      const p = JSON.parse(raw);
+      items  = p.items  || [];
+      banner = p.banner || null;
+      localStorage.setItem(SK, raw);
+      logSync('✓ Loaded '+items.length+' items');
     } else {
-      logSync('File "'+GIST_FILE+'" not in Gist yet — will be created on first save. Files present: '+( fileNames.join(', ')||'none'));
+      logSync('"'+GIST_FILE+'" not found yet — will create on first save');
     }
     setSyncUI('saved','');
     setTimeout(()=>setSyncUI('idle',''), 2500);
     return true;
   } catch(e){
-    logSync('✗ Load error: '+e.message);
-    try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;logSync('Fell back to localStorage: '+items.length+' items');}}catch{}
+    logSync('✗ '+e.message);
+    try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;logSync('Using localStorage: '+items.length+' items');}}catch{}
     setSyncUI('error', e.message);
     setTimeout(()=>setSyncUI('idle',''), 8000);
     return false;
@@ -540,28 +537,27 @@ async function saveToGist(){
   const payload = JSON.stringify({items, banner});
   localStorage.setItem(SK, payload);
   setSyncUI('saving','');
-  logSync('Saving to Gist…');
+  logSync('Saving…');
   try {
-    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`,{
-      method:'PATCH',
-      headers:{
-        'Authorization':`token ${GIST_TOK}`,
-        'Accept':'application/vnd.github.v3+json',
-        'Content-Type':'application/json',
+    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${GIST_TOK}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({files:{[GIST_FILE]:{content:payload}}})
     });
-    const body = await res.json();
     logSync('Save status: '+res.status);
-    if(res.status===401){throw new Error('401 Unauthorized — token rejected');}
-    if(res.status===403){throw new Error('403 Forbidden — '+(body.message||'check token scope'));}
-    if(!res.ok){throw new Error('HTTP '+res.status+': '+(body.message||'unknown'));}
-    const saved = body.files?.[GIST_FILE];
-    logSync('✓ Saved. File in gist: '+(saved?'yes':'no — filename mismatch?'));
+    if(res.status===401) throw new Error('401 — Token rejected.');
+    if(res.status===403) throw new Error('403 — Forbidden.');
+    if(!res.ok){const b=await res.json();throw new Error('HTTP '+res.status+': '+(b.message||''));}
+    logSync('✓ Saved to Gist');
     setSyncUI('saved','');
     setTimeout(()=>setSyncUI('idle',''), 2500);
   } catch(e){
-    logSync('✗ Save error: '+e.message);
+    logSync('✗ '+e.message);
     setSyncUI('error', e.message);
     setTimeout(()=>setSyncUI('idle',''), 8000);
   }
