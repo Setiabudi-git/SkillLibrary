@@ -288,6 +288,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
       <p>Skill &amp; Learning Library</p>
     </div>
     <div class="header-stats">
+      <div id="syncStatus" style="align-self:center;min-width:70px;text-align:right;"></div>
       <div class="stat-box"><div class="num" id="statTotal">0</div><div class="lbl">Total</div></div>
       <div class="stat-box"><div class="num" id="statComplete">0</div><div class="lbl">Complete</div></div>
       <div class="stat-box"><div class="num" id="statAvg">0%</div><div class="lbl">Avg Progress</div></div>
@@ -460,13 +461,131 @@ function minsToH(h,m){return Math.round((h*60+m)/60*100)/100;}
 function hToHM(d){const t=Math.round(d*60);return{h:Math.floor(t/60),m:t%60};}
 function fmtH(d){return(!d||d<=0)?'—':d+' hrs';}
 
-function load(){
-  try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;}}
-  catch{items=[];}
-  if(!items.length)seed();
-  if(banner)document.getElementById('avatarEl').innerHTML=`<img src="${banner}" alt="">`;
+// ── GITHUB GIST SYNC ─────────────────────────────────────────────
+const GIST_ID  = '97d78aa28af003fc4f9490d6639becfe';
+const GIST_TOK = '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';
+const GIST_FILE= 'skill-library-data.json';
+let syncTimeout = null;
+
+function setSyncUI(status, msg){
+  const el = document.getElementById('syncStatus');
+  if(!el) return;
+  const map = {
+    idle:   {icon:'☁',  col:'var(--text-secondary)', txt:''},
+    loading:{icon:'↓',  col:'var(--accent-blue)',    txt:'Loading…'},
+    saving: {icon:'↑',  col:'var(--accent-blue)',    txt:'Saving…'},
+    saved:  {icon:'✓',  col:'var(--accent-green)',   txt:'Synced'},
+    error:  {icon:'⚠',  col:'#e05c5c',               txt: msg||'Sync failed'},
+  };
+  const s = map[status]||map.idle;
+  // Tap ⚠ to see full log; tap ☁ to manually force a reload from Gist
+  const onclick = status==='error' ? 'showSyncLog()' : status==='idle' ? 'load()' : '';
+  el.innerHTML = `<span style="color:${s.col};font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="${onclick}" title="${status==='idle'?'Click to reload from Gist':status==='error'?'Click to see error details':''}">${s.icon} ${s.txt}</span>`;
 }
-function save(){localStorage.setItem(SK,JSON.stringify({items,banner}));}
+
+// Visible log for debugging — tap the ⚠ warning to see what went wrong
+const syncLog = [];
+function logSync(msg){ syncLog.push(new Date().toLocaleTimeString()+': '+msg); console.log('[SYNC]',msg); }
+function showSyncLog(){
+  alert('Sync debug log:\n\n'+syncLog.slice(-10).join('\n'));
+}
+
+async function loadFromGist(){
+  setSyncUI('loading','');
+  logSync('Fetching from Gist '+GIST_ID);
+  try {
+    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`,{
+      cache:'no-store',
+      headers:{
+        'Authorization':`token ${GIST_TOK}`,
+        'Accept':'application/vnd.github.v3+json',
+        'Cache-Control':'no-cache',
+      }
+    });
+    logSync('Gist fetch status: '+res.status);
+    const body = await res.json();
+    if(res.status===401){throw new Error('401 Unauthorized — token rejected by GitHub');}
+    if(res.status===403){throw new Error('403 Forbidden — '+( body.message||'rate limit or permissions'));}
+    if(res.status===404){throw new Error('404 — Gist not found. Check GIST_ID');}
+    if(!res.ok){throw new Error('HTTP '+res.status+': '+(body.message||'unknown'));}
+    const fileNames = Object.keys(body.files||{});
+    logSync('Gist files found: ['+(fileNames.join(', ')||'none')+']');
+    const raw = body.files?.[GIST_FILE]?.content;
+    if(raw){
+      try{
+        const p = JSON.parse(raw);
+        items  = p.items  || [];
+        banner = p.banner || null;
+        localStorage.setItem(SK, raw);
+        logSync('✓ Loaded '+items.length+' items from Gist');
+      }catch(pe){
+        throw new Error('Gist file exists but JSON is invalid: '+pe.message);
+      }
+    } else {
+      logSync('File "'+GIST_FILE+'" not in Gist yet — will be created on first save. Files present: '+( fileNames.join(', ')||'none'));
+    }
+    setSyncUI('saved','');
+    setTimeout(()=>setSyncUI('idle',''), 2500);
+    return true;
+  } catch(e){
+    logSync('✗ Load error: '+e.message);
+    try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;logSync('Fell back to localStorage: '+items.length+' items');}}catch{}
+    setSyncUI('error', e.message);
+    setTimeout(()=>setSyncUI('idle',''), 8000);
+    return false;
+  }
+}
+
+async function saveToGist(){
+  const payload = JSON.stringify({items, banner});
+  localStorage.setItem(SK, payload);
+  setSyncUI('saving','');
+  logSync('Saving to Gist…');
+  try {
+    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`,{
+      method:'PATCH',
+      headers:{
+        'Authorization':`token ${GIST_TOK}`,
+        'Accept':'application/vnd.github.v3+json',
+        'Content-Type':'application/json',
+      },
+      body: JSON.stringify({files:{[GIST_FILE]:{content:payload}}})
+    });
+    const body = await res.json();
+    logSync('Save status: '+res.status);
+    if(res.status===401){throw new Error('401 Unauthorized — token rejected');}
+    if(res.status===403){throw new Error('403 Forbidden — '+(body.message||'check token scope'));}
+    if(!res.ok){throw new Error('HTTP '+res.status+': '+(body.message||'unknown'));}
+    const saved = body.files?.[GIST_FILE];
+    logSync('✓ Saved. File in gist: '+(saved?'yes':'no — filename mismatch?'));
+    setSyncUI('saved','');
+    setTimeout(()=>setSyncUI('idle',''), 2500);
+  } catch(e){
+    logSync('✗ Save error: '+e.message);
+    setSyncUI('error', e.message);
+    setTimeout(()=>setSyncUI('idle',''), 8000);
+  }
+}
+
+function save(){
+  localStorage.setItem(SK, JSON.stringify({items, banner}));
+  clearTimeout(syncTimeout);
+  setSyncUI('saving','');
+  syncTimeout = setTimeout(saveToGist, 800);
+}
+
+async function load(){
+  setSyncUI('loading','');
+  // Fast local paint first
+  try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;}}catch{}
+  if(banner) document.getElementById('avatarEl').innerHTML=`<img src="${banner}" alt="">`;
+  if(items.length) render();
+  // Then sync from Gist
+  await loadFromGist();
+  if(!items.length) seed();
+  if(banner) document.getElementById('avatarEl').innerHTML=`<img src="${banner}" alt="">`;
+  render();
+}
 
 function seed(){
   items=[
