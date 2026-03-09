@@ -431,6 +431,26 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
   </div>
 </div>
 
+<!-- TOKEN SETUP MODAL -->
+<div class="overlay" id="tokenOverlay" style="z-index:900;">
+  <div class="modal" style="max-width:420px;">
+    <h2 style="margin-bottom:8px;">🔑 GitHub Sync Token</h2>
+    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6;">
+      Your token is stored <strong style="color:var(--text-primary)">only in this browser</strong> — never in the code or on GitHub, so it won't get auto-revoked.<br><br>
+      To get a token: <strong style="color:var(--text-primary)">github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)</strong> → Generate new token → check only <code style="background:#132130;padding:1px 5px;border-radius:2px;">gist</code> scope → copy it here.
+    </p>
+    <div class="field">
+      <label>Personal Access Token</label>
+      <input type="password" id="tokenInput" placeholder="ghp_…" style="font-family:monospace;letter-spacing:.5px;">
+    </div>
+    <div style="font-size:11px;color:var(--text-secondary);margin-top:-8px;margin-bottom:14px;">You'll need to paste this once per device/browser.</div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeTokenModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTokenAndSync()">Save &amp; Sync</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONTEXT MENU -->
 <div class="ctx-menu" id="ctxMenu">
   <div class="ctx-item" id="ctxEdit">✏️ Edit</div>
@@ -462,55 +482,75 @@ function hToHM(d){const t=Math.round(d*60);return{h:Math.floor(t/60),m:t%60};}
 function fmtH(d){return(!d||d<=0)?'—':d+' hrs';}
 
 // ── GITHUB GIST SYNC ─────────────────────────────────────────────
+// Token is NEVER stored in code — lives only in your browser's localStorage
+// so GitHub's scanner can never find and revoke it.
 const GIST_ID   = 'b5233c164df483b438fc8989ed4cb9e4';
-const GIST_TOK  = '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';
 const GIST_FILE = 'skill-library-data.json';
-const GIST_OWNER= 'Setiabudi-git';
+const TOK_KEY   = 'skill_lib_tok'; // localStorage key for the token
 let syncTimeout = null;
+
+function getToken(){ return localStorage.getItem(TOK_KEY)||''; }
+function setToken(t){ localStorage.setItem(TOK_KEY, t.trim()); }
 
 function setSyncUI(status, msg){
   const el = document.getElementById('syncStatus');
   if(!el) return;
   const map = {
-    idle:   {icon:'☁',  col:'var(--text-secondary)', txt:''},
-    loading:{icon:'↓',  col:'var(--accent-blue)',    txt:'Loading…'},
-    saving: {icon:'↑',  col:'var(--accent-blue)',    txt:'Saving…'},
-    saved:  {icon:'✓',  col:'var(--accent-green)',   txt:'Synced'},
-    error:  {icon:'⚠',  col:'#e05c5c',               txt: msg||'Sync failed'},
+    idle:    {icon:'☁',  col:'var(--text-secondary)', txt:'',          click:'load()'},
+    loading: {icon:'↓',  col:'var(--accent-blue)',    txt:'Loading…',  click:''},
+    saving:  {icon:'↑',  col:'var(--accent-blue)',    txt:'Saving…',   click:''},
+    saved:   {icon:'✓',  col:'var(--accent-green)',   txt:'Synced',    click:''},
+    notoken: {icon:'🔑', col:'var(--gold)',            txt:'Set token', click:'openTokenModal()'},
+    error:   {icon:'⚠',  col:'#e05c5c',               txt:msg||'Error',click:'showSyncLog()'},
   };
   const s = map[status]||map.idle;
-  // Tap ⚠ to see full log; tap ☁ to manually force a reload from Gist
-  const onclick = status==='error' ? 'showSyncLog()' : status==='idle' ? 'load()' : '';
-  el.innerHTML = `<span style="color:${s.col};font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="${onclick}" title="${status==='idle'?'Click to reload from Gist':status==='error'?'Click to see error details':''}">${s.icon} ${s.txt}</span>`;
+  el.innerHTML=`<span style="color:${s.col};font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer;" onclick="${s.click}" title="${s.click?'Click for action':''}">${s.icon} ${s.txt}</span>`;
 }
 
-// Visible log for debugging — tap the ⚠ warning to see what went wrong
-const syncLog = [];
-function logSync(msg){ syncLog.push(new Date().toLocaleTimeString()+': '+msg); console.log('[SYNC]',msg); }
-function showSyncLog(){
-  alert('Sync debug log:\n\n'+syncLog.slice(-10).join('\n'));
+const syncLog=[];
+function logSync(msg){syncLog.push(new Date().toLocaleTimeString()+': '+msg);console.log('[SYNC]',msg);}
+function showSyncLog(){alert('Sync log:\n\n'+syncLog.slice(-12).join('\n'));}
+
+function openTokenModal(){
+  const cur = getToken();
+  document.getElementById('tokenInput').value = cur;
+  document.getElementById('tokenOverlay').classList.add('open');
+  document.getElementById('tokenInput').focus();
+}
+function closeTokenModal(){document.getElementById('tokenOverlay').classList.remove('open');}
+async function saveTokenAndSync(){
+  const t = document.getElementById('tokenInput').value.trim();
+  if(!t) return;
+  setToken(t);
+  closeTokenModal();
+  await loadFromGist();
+  if(!items.length) seed();
+  if(banner) document.getElementById('avatarEl').innerHTML=`<img src="${banner}" alt="">`;
+  render();
 }
 
 async function loadFromGist(){
+  const tok = getToken();
+  if(!tok){ setSyncUI('notoken',''); return false; }
   setSyncUI('loading','');
   logSync('Fetching Gist '+GIST_ID);
   try {
-    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      cache: 'no-store',
-      headers: {
-        'Authorization': `Bearer ${GIST_TOK}`,
-        'Accept': 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
+    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`,{
+      cache:'no-store',
+      headers:{
+        'Authorization':`Bearer ${tok}`,
+        'Accept':'application/vnd.github+json',
+        'X-GitHub-Api-Version':'2022-11-28',
       }
     });
     logSync('Status: '+res.status);
-    if(res.status===401) throw new Error('401 — Token rejected. Generate a new token.');
-    if(res.status===403) throw new Error('403 — Forbidden. Check token has gist scope.');
-    if(res.status===404) throw new Error('404 — Gist not found. Check Gist ID.');
+    if(res.status===401) throw new Error('401 — Token invalid. Click 🔑 to update it.');
+    if(res.status===403) throw new Error('403 — Token lacks gist scope.');
+    if(res.status===404) throw new Error('404 — Gist not found. Check ID.');
     if(!res.ok) throw new Error('HTTP '+res.status);
     const gist = await res.json();
     const fileNames = Object.keys(gist.files||{});
-    logSync('Files in gist: '+fileNames.join(', '));
+    logSync('Files: '+fileNames.join(', '));
     const raw = gist.files?.[GIST_FILE]?.content;
     if(raw){
       const p = JSON.parse(raw);
@@ -519,14 +559,14 @@ async function loadFromGist(){
       localStorage.setItem(SK, raw);
       logSync('✓ Loaded '+items.length+' items');
     } else {
-      logSync('"'+GIST_FILE+'" not found yet — will create on first save');
+      logSync('"'+GIST_FILE+'" not in gist yet — will create on first save');
     }
     setSyncUI('saved','');
     setTimeout(()=>setSyncUI('idle',''), 2500);
     return true;
   } catch(e){
     logSync('✗ '+e.message);
-    try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;logSync('Using localStorage: '+items.length+' items');}}catch{}
+    try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;}}catch{}
     setSyncUI('error', e.message);
     setTimeout(()=>setSyncUI('idle',''), 8000);
     return false;
@@ -534,26 +574,28 @@ async function loadFromGist(){
 }
 
 async function saveToGist(){
+  const tok = getToken();
+  if(!tok){ setSyncUI('notoken',''); return; }
   const payload = JSON.stringify({items, banner});
   localStorage.setItem(SK, payload);
   setSyncUI('saving','');
   logSync('Saving…');
   try {
-    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${GIST_TOK}`,
-        'Accept': 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-        'Content-Type': 'application/json',
+    const res = await fetch(`https://api.github.com/gists/${GIST_ID}`,{
+      method:'PATCH',
+      headers:{
+        'Authorization':`Bearer ${tok}`,
+        'Accept':'application/vnd.github+json',
+        'X-GitHub-Api-Version':'2022-11-28',
+        'Content-Type':'application/json',
       },
       body: JSON.stringify({files:{[GIST_FILE]:{content:payload}}})
     });
     logSync('Save status: '+res.status);
-    if(res.status===401) throw new Error('401 — Token rejected.');
-    if(res.status===403) throw new Error('403 — Forbidden.');
+    if(res.status===401) throw new Error('401 — Token invalid. Click 🔑 to update it.');
+    if(res.status===403) throw new Error('403 — Token lacks gist scope.');
     if(!res.ok){const b=await res.json();throw new Error('HTTP '+res.status+': '+(b.message||''));}
-    logSync('✓ Saved to Gist');
+    logSync('✓ Saved');
     setSyncUI('saved','');
     setTimeout(()=>setSyncUI('idle',''), 2500);
   } catch(e){
@@ -564,19 +606,17 @@ async function saveToGist(){
 }
 
 function save(){
-  localStorage.setItem(SK, JSON.stringify({items, banner}));
+  localStorage.setItem(SK, JSON.stringify({items,banner}));
   clearTimeout(syncTimeout);
   setSyncUI('saving','');
   syncTimeout = setTimeout(saveToGist, 800);
 }
 
 async function load(){
-  setSyncUI('loading','');
-  // Fast local paint first
+  if(!getToken()){ setSyncUI('notoken',''); }
   try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;}}catch{}
   if(banner) document.getElementById('avatarEl').innerHTML=`<img src="${banner}" alt="">`;
   if(items.length) render();
-  // Then sync from Gist
   await loadFromGist();
   if(!items.length) seed();
   if(banner) document.getElementById('avatarEl').innerHTML=`<img src="${banner}" alt="">`;
@@ -1002,7 +1042,7 @@ document.querySelectorAll('.sort-btn').forEach(b=>{
     b.classList.add('active');sort=b.dataset.sort;render();
   });
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();document.getElementById('bdpOverlay').classList.remove('open');bdpCurrentId=null;}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTokenModal();document.getElementById('bdpOverlay').classList.remove('open');bdpCurrentId=null;}});
 
 load();render();
 </script>
