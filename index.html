@@ -38,10 +38,26 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 
 /* ── NAV TABS ── */
 .nav-tabs{background:var(--bg-header);border-bottom:1px solid var(--border);}
-.nav-tabs .w{display:flex;gap:2px;padding:0 20px;}
+.nav-tabs .w{display:flex;gap:2px;padding:0 20px;align-items:stretch;}
 .tab{padding:9px 16px;font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap;}
 .tab:hover{color:var(--text-primary);}
 .tab.active{color:var(--accent-blue);border-bottom-color:var(--accent-blue);background:rgba(102,192,244,.05);}
+/* Other dropdown */
+.tab-other-wrap{position:relative;display:flex;align-items:stretch;}
+.tab-dropdown{
+  display:none;position:absolute;top:100%;left:0;z-index:200;
+  background:var(--bg-secondary);border:1px solid var(--border);border-radius:4px;
+  min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  overflow:hidden;
+}
+.tab-other-wrap.open .tab-dropdown{display:block;}
+.tab-other-wrap.open #tabOther{color:var(--accent-blue);border-bottom-color:var(--accent-blue);}
+.tab-dd-item{padding:8px 16px;font-size:13px;color:var(--text-primary);cursor:pointer;white-space:nowrap;}
+.tab-dd-item:hover{background:var(--bg-card-hover);}
+.tab-dd-item.active{color:var(--accent-blue);background:rgba(102,192,244,.07);}
+
+/* BDP description */
+.bdp-desc{font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:16px;padding:10px 12px;background:#162333;border-radius:3px;border:1px solid var(--border);white-space:pre-wrap;}
 
 /* ── TOOLBAR ── */
 .toolbar{background:var(--bg-base);border-bottom:1px solid var(--border);padding:10px 0;}
@@ -247,6 +263,8 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 }
 .bli-sq.gold-sq{border-color:var(--gold)55;background:#2a2010;color:var(--gold);}
 .bli-name{font-size:11px;color:var(--text-primary);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bli-name-inp{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text-primary);font-size:11px;font-weight:600;font-family:'Inter',sans-serif;width:100%;padding:1px 2px;outline:none;}
+.bli-name-inp:focus{border-bottom-color:var(--accent-blue);}
 .bli-desc-inp{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text-secondary);font-size:11px;font-family:'Inter',sans-serif;width:100%;padding:1px 2px;outline:none;}
 .bli-desc-inp:focus{border-bottom-color:var(--accent-blue);}
 .badge-del{background:none;border:none;color:#e05c5c;cursor:pointer;font-size:12px;line-height:1;}
@@ -299,12 +317,21 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 <!-- NAV TABS -->
 <div class="nav-tabs">
   <div class="w">
-    <button class="tab active" data-filter="all">All Items (<span id="countAll">0</span>)</button>
-    <button class="tab" data-filter="course">Courses (<span id="countCourse">0</span>)</button>
-    <button class="tab" data-filter="skill">Skills (<span id="countSkill">0</span>)</button>
-    <button class="tab" data-filter="college">College (<span id="countCollege">0</span>)</button>
-    <button class="tab" data-filter="project">Projects (<span id="countProject">0</span>)</button>
-    <button class="tab" data-filter="cert">Certs (<span id="countCert">0</span>)</button>
+    <button class="tab active" data-filter="all">All (<span id="countAll">0</span>)</button>
+    <button class="tab" data-filter="inprogress">In Progress (<span id="countInProgress">0</span>)</button>
+    <button class="tab" data-filter="completed">Completed (<span id="countCompleted">0</span>)</button>
+    <div class="tab-other-wrap">
+      <button class="tab" id="tabOther" data-filter="other-menu">Other ▾</button>
+      <div class="tab-dropdown" id="tabDropdown">
+        <div class="tab-dd-item" data-filter="course">Courses (<span id="countCourse">0</span>)</div>
+        <div class="tab-dd-item" data-filter="skill">Skills (<span id="countSkill">0</span>)</div>
+        <div class="tab-dd-item" data-filter="college">College (<span id="countCollege">0</span>)</div>
+        <div class="tab-dd-item" data-filter="project">Projects (<span id="countProject">0</span>)</div>
+        <div class="tab-dd-item" data-filter="cert">Certs (<span id="countCert">0</span>)</div>
+        <div class="tab-dd-item" data-filter="book">Books (<span id="countBook">0</span>)</div>
+        <div class="tab-dd-item" data-filter="other">Other (<span id="countOther">0</span>)</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -348,6 +375,8 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
       <button class="bdp-close" id="bdpClose">✕</button>
     </div>
     <div class="bdp-body">
+      <!-- Item description -->
+      <div id="bdpDescWrap" style="display:none;"><div class="bdp-desc" id="bdpDesc"></div></div>
       <!-- Normal badges section -->
       <div id="bdpNormalSection">
         <div class="bdp-section-title" id="bdpNormalTitle" style="color:var(--accent-blue)">Achievements</div>
@@ -374,6 +403,10 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
       <input type="text" id="fTitle" placeholder="e.g. Machine Learning, CS101, React…">
     </div>
     <div class="field">
+      <label>Description <span style="font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;">(shown in badge detail page — use for notes, links, evidence…)</span></label>
+      <textarea id="fDesc" rows="3" placeholder="Optional notes, spreadsheet links, evidence log…" style="width:100%;background:var(--bg-base);border:1px solid var(--border);border-radius:3px;padding:7px 10px;color:var(--text-primary);font-size:12px;font-family:'Inter',sans-serif;outline:none;resize:vertical;line-height:1.5;"></textarea>
+    </div>
+    <div class="field">
       <label>Category</label>
       <select id="fCategory">
         <option value="course">📘 Course</option>
@@ -393,6 +426,8 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
         <input type="number" id="fHoursM" value="0" min="0" max="59" step="1">
         <span>min</span>
         <button class="hrs-add-btn" id="addPomodoro">+25 min</button>
+        <input type="number" id="customMins" min="1" max="999" placeholder="XX" style="width:48px;text-align:center;background:var(--bg-base);border:1px solid var(--border);border-radius:3px;padding:5px 4px;color:var(--text-primary);font-size:12px;font-family:'Inter',sans-serif;outline:none;">
+        <button class="hrs-add-btn" id="addCustomMins">+ min</button>
       </div>
       <div class="hrs-note" id="hrsPreview">Stored as: 0.00 hrs</div>
     </div>
@@ -678,7 +713,9 @@ function seed(){
 function filtered(){
   const q=document.getElementById('searchInput').value.toLowerCase();
   let l=items.filter(it=>{
-    if(filter!=='all'&&it.category!==filter)return false;
+    if(filter==='inprogress'){const p=bpct(it.badges);if(p===0||p===100)return false;}
+    else if(filter==='completed'){if(bpct(it.badges)!==100)return false;}
+    else if(filter!=='all'){if(it.category!==filter)return false;}
     if(q&&!it.title.toLowerCase().includes(q)&&!it.category.includes(q)&&!(it.badges||[]).map(b=>b.name).join(' ').toLowerCase().includes(q))return false;
     return true;
   });
@@ -773,8 +810,11 @@ function cardHTML(it){
 
 function updateCounts(){
   document.getElementById('countAll').textContent=items.length;
-  ['course','skill','college','project','cert'].forEach(c=>{
-    document.getElementById('count'+c.charAt(0).toUpperCase()+c.slice(1)).textContent=items.filter(i=>i.category===c).length;
+  document.getElementById('countInProgress').textContent=items.filter(i=>{const p=bpct(i.badges);return p>0&&p<100;}).length;
+  document.getElementById('countCompleted').textContent=items.filter(i=>bpct(i.badges)===100).length;
+  ['course','skill','college','project','cert','book','other'].forEach(c=>{
+    const el=document.getElementById('count'+c.charAt(0).toUpperCase()+c.slice(1));
+    if(el) el.textContent=items.filter(i=>i.category===c).length;
   });
 }
 function updateStats(){
@@ -832,6 +872,16 @@ function renderBDP(){
     thumbEl.innerHTML=`<img src="${it.thumbImg}" alt="">`;
   } else {
     thumbEl.innerHTML=`<div class="bdp-thumb-fallback" style="background:${st.bg};color:${st.ac};">${it.title.slice(0,3).toUpperCase()}</div>`;
+  }
+
+  // Item description
+  const descWrap=document.getElementById('bdpDescWrap');
+  const descEl=document.getElementById('bdpDesc');
+  if(it.desc&&it.desc.trim()){
+    descEl.textContent=it.desc;
+    descWrap.style.display='block';
+  } else {
+    descWrap.style.display='none';
   }
 
   // Progress bar + label
@@ -892,10 +942,12 @@ function openModal(item=null){
   editingId=item?item.id:null;
   document.getElementById('modalTitle').textContent=item?'Edit Item':'Add New Item';
   document.getElementById('fTitle').value=item?.title||'';
+  document.getElementById('fDesc').value=item?.desc||'';
   document.getElementById('fCategory').value=item?.category||'course';
   const hm=hToHM(item?.hours||0);
   document.getElementById('fHoursH').value=hm.h;
   document.getElementById('fHoursM').value=hm.m;
+  document.getElementById('customMins').value='';
   updateHrsPreview();
   modalBadges=(item?.badges||[]).map(b=>({...b}));
   modalSecrets=(item?.secrets||[]).map(b=>({...b}));
@@ -921,6 +973,17 @@ document.getElementById('addPomodoro').addEventListener('click',()=>{
   document.getElementById('fHoursM').value=m;
   updateHrsPreview();
 });
+document.getElementById('addCustomMins').addEventListener('click',()=>{
+  const add=parseInt(document.getElementById('customMins').value)||0;
+  if(add<=0)return;
+  let h=parseInt(document.getElementById('fHoursH').value)||0;
+  let m=parseInt(document.getElementById('fHoursM').value)||0;
+  m+=add;if(m>=60){h+=Math.floor(m/60);m%=60;}
+  document.getElementById('fHoursH').value=h;
+  document.getElementById('fHoursM').value=m;
+  document.getElementById('customMins').value='';
+  updateHrsPreview();
+});
 
 // Normal badges
 function renderModalBadges(){
@@ -935,13 +998,14 @@ function renderModalBadges(){
     return `<div class="badge-list-item">
       <input type="checkbox" ${b.checked?'checked':''} onchange="toggleNB(${i},this.checked)">
       <div class="bli-sq" style="background:${sqBg};color:${sqCol};">${lbl}</div>
-      <span class="bli-name" title="${b.name}">${b.name}</span>
+      <span class="bli-desc"><input class="bli-name-inp" type="text" value="${b.name||''}" placeholder="Name…" oninput="setNName(${i},this.value)"></span>
       <span class="bli-desc"><input class="bli-desc-inp" type="text" value="${b.desc||''}" placeholder="Description…" oninput="setNDesc(${i},this.value)"></span>
       <button class="badge-del" onclick="delNB(${i})">✕</button>
     </div>`;
   }).join('');
 }
 function toggleNB(i,v){modalBadges[i].checked=v;renderModalBadges();}
+function setNName(i,v){modalBadges[i].name=v;}
 function setNDesc(i,v){modalBadges[i].desc=v;}
 function delNB(i){modalBadges.splice(i,1);renderModalBadges();}
 
@@ -964,12 +1028,13 @@ function renderModalSecrets(){
     return `<div class="badge-list-item secret">
       <div style="width:13px"></div>
       <div class="bli-sq gold-sq">${lbl}</div>
-      <span class="bli-name" title="${b.name}">${b.name}</span>
+      <span class="bli-desc"><input class="bli-name-inp" type="text" value="${b.name||''}" placeholder="Name…" oninput="setSName(${i},this.value)"></span>
       <span class="bli-desc"><input class="bli-desc-inp" type="text" value="${b.desc||''}" placeholder="Description…" oninput="setSDesc(${i},this.value)"></span>
       <button class="badge-del" onclick="delSB(${i})">✕</button>
     </div>`;
   }).join('');
 }
+function setSName(i,v){modalSecrets[i].name=v;}
 function setSDesc(i,v){modalSecrets[i].desc=v;}
 function delSB(i){modalSecrets.splice(i,1);renderModalSecrets();}
 
@@ -994,6 +1059,7 @@ document.getElementById('saveItem').addEventListener('click',()=>{
   const m=parseInt(document.getElementById('fHoursM').value)||0;
   const item={
     id:editingId||uid(),title,
+    desc:document.getElementById('fDesc').value.trim(),
     category:document.getElementById('fCategory').value,
     hours:minsToH(h,m),lastPlayed:today(),
     badges:modalBadges.map(b=>({...b})),
@@ -1024,16 +1090,49 @@ function openCtx(e,id){
   m.style.top=e.clientY+'px';m.style.left=e.clientX+'px';
   m.classList.add('open');
 }
-document.addEventListener('click',()=>document.getElementById('ctxMenu').classList.remove('open'));
-document.getElementById('ctxEdit').addEventListener('click',()=>{const it=items.find(i=>i.id===ctxId);if(it)openModal(it);});
+document.addEventListener('click',e=>{
+  // Close context menu
+  const ctx=document.getElementById('ctxMenu');
+  if(!e.target.closest('.dots-btn')) ctx.classList.remove('open');
+  // Close Other dropdown
+  const wrap=document.getElementById('tabOther')?.parentElement;
+  if(wrap&&!wrap.contains(e.target)) wrap.classList.remove('open');
+});document.getElementById('ctxEdit').addEventListener('click',()=>{const it=items.find(i=>i.id===ctxId);if(it)openModal(it);});
 document.getElementById('ctxDelete').addEventListener('click',()=>{items=items.filter(i=>i.id!==ctxId);save();render();});
 
 // ── TABS / SEARCH / SORT ─────────────────────────────────────────
-document.querySelectorAll('.tab').forEach(b=>{
-  b.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');filter=b.dataset.filter;render();
-  });
+function setFilter(f){
+  filter=f;
+  // Update plain tabs
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.tab-dd-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('tabDropdown').parentElement.classList.remove('open');
+  // Highlight matching tab or dropdown item
+  const plain=[...document.querySelectorAll('.tab[data-filter]')].find(t=>t.dataset.filter===f);
+  if(plain) plain.classList.add('active');
+  else {
+    // it's a category filter — highlight the dd item and mark Other tab active
+    document.getElementById('tabOther').classList.add('active');
+    const ddItem=[...document.querySelectorAll('.tab-dd-item')].find(t=>t.dataset.filter===f);
+    if(ddItem) ddItem.classList.add('active');
+  }
+  render();
+}
+
+// Plain tabs
+document.querySelectorAll('.tab[data-filter]').forEach(b=>{
+  if(b.dataset.filter==='other-menu'){
+    b.addEventListener('click',e=>{
+      e.stopPropagation();
+      b.parentElement.classList.toggle('open');
+    });
+  } else {
+    b.addEventListener('click',()=>setFilter(b.dataset.filter));
+  }
+});
+// Dropdown items
+document.querySelectorAll('.tab-dd-item').forEach(b=>{
+  b.addEventListener('click',()=>setFilter(b.dataset.filter));
 });
 document.getElementById('searchInput').addEventListener('input',render);
 document.querySelectorAll('.sort-btn').forEach(b=>{
