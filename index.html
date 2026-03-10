@@ -76,19 +76,28 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 /* ── CONTENT ── */
 .content{padding:14px 0 60px;}
 .content .w{padding:0 20px;}
+#cardList{padding:8px 12px;}
 
 /* ── CARD ── */
 .card{
   background:var(--bg-card);border:1px solid var(--border);border-radius:3px;
   margin-bottom:8px;
-  display:flex;align-items:stretch;transition:background .15s,border-color .15s;
-  overflow:hidden;animation:slideIn .2s ease both;
+  display:flex;align-items:stretch;
+  transition:background .18s,border-color .18s,transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s ease;
+  animation:slideIn .2s ease both;
+  transform-origin:center;
+  position:relative;z-index:1;
 }
-.card:hover{background:var(--bg-card-hover);border-color:#3a5a7a;}
+.card:hover{
+  background:var(--bg-card-hover);border-color:#3a5a7a;
+  transform:scale(1.03);
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+  z-index:10;
+}
 @keyframes slideIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
 
 /* Thumbnail */
-.card-thumb{width:180px;flex-shrink:0;position:relative;overflow:hidden;align-self:stretch;}
+.card-thumb{width:180px;flex-shrink:0;position:relative;overflow:hidden;align-self:stretch;border-radius:3px 0 0 3px;}
 .thumb-inner{width:100%;height:100%;min-height:72px;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;text-align:center;padding:8px;letter-spacing:.5px;position:relative;}
 .card-thumb-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;cursor:pointer;font-size:18px;z-index:2;}
 .card-thumb:hover .card-thumb-overlay{opacity:1;}
@@ -102,7 +111,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .cat-badge{padding:2px 7px;border-radius:2px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;align-self:flex-start;flex-shrink:0;border:1px solid currentColor;}
 
 /* Meta row */
-.card-meta{display:flex;gap:20px;align-items:flex-end;}
+.card-meta{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;}
 .meta-item{display:flex;flex-direction:column;gap:1px;flex-shrink:0;}
 .meta-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-secondary);font-weight:600;}
 .meta-val{font-size:12px;color:var(--text-primary);}
@@ -111,14 +120,13 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .ach-block{flex:1;display:flex;flex-direction:column;gap:3px;min-width:0;}
 .ach-top-row{display:flex;justify-content:space-between;align-items:center;}
 .ach-count{font-size:11px;color:var(--text-primary);}
-.ach-bar-row{display:flex;align-items:center;gap:8px;}
+.ach-bar-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 
-/* Bar — fixed px, always same */
-.progress-bar-outer{width:300px;flex-shrink:0;height:6px;background:var(--progress-bg);border-radius:1px;overflow:hidden;}
+/* Bar */
+.progress-bar-outer{width:300px;max-width:100%;flex-shrink:1;height:6px;background:var(--progress-bg);border-radius:1px;overflow:hidden;}
 .progress-bar-inner{height:100%;border-radius:1px;transition:width .5s cubic-bezier(.4,0,.2,1);}
 
-/* Badge strip — always 6 slots × 28px + 5 gaps × 3px = 183px */
-/* FIX #5: card-actions has right padding so "+X" never touches the edge */
+/* Badge strip */
 .badge-squares{display:flex;gap:3px;flex-shrink:0;width:183px;}
 .badge-sq{
   width:28px;height:28px;flex-shrink:0;border-radius:2px;
@@ -129,21 +137,55 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
   transition:filter .12s,transform .12s;
 }
 .badge-sq:hover{filter:brightness(1.35);transform:scale(1.1);z-index:10;}
+
 .badge-overflow{
   width:28px;height:28px;flex-shrink:0;border-radius:2px;
   display:flex;align-items:center;justify-content:center;
   font-size:10px;font-weight:700;
   background:var(--bg-secondary);border:1px solid var(--border);
-  color:var(--text-secondary);cursor:pointer; /* clickable now */
+  color:var(--text-secondary);cursor:pointer;
   transition:background .12s;
 }
 .badge-overflow:hover{background:var(--accent-teal);color:#fff;border-color:var(--accent-teal);}
 .badge-empty{width:28px;height:28px;flex-shrink:0;border-radius:2px;border:1px dashed #253a52;opacity:.25;}
 
-/* FIX #5: right action strip — padding-right gives breathing room from card edge */
+/* Card actions */
 .card-actions{flex-shrink:0;padding:8px 16px 8px 4px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;}
 .dots-btn{background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:17px;line-height:1;padding:2px 3px;border-radius:3px;}
 .dots-btn:hover{color:var(--accent-blue);}
+
+/* Star button in BDP */
+.bdp-star-btn{
+  background:none;border:1px solid var(--border);border-radius:3px;
+  color:var(--text-secondary);cursor:pointer;font-size:14px;
+  padding:3px 8px;transition:all .15s;flex-shrink:0;
+}
+.bdp-star-btn:hover{border-color:var(--gold);color:var(--gold);}
+.bdp-star-btn.starred{color:var(--gold);border-color:var(--gold)44;background:#2a201044;}
+
+/* ── MOBILE RESPONSIVE ── */
+@media(max-width:600px){
+  .header .w{gap:10px;padding:0 12px;}
+  .header-info p{display:none;}
+  .stat-box .lbl{font-size:9px;}
+  .stat-box .num{font-size:16px;}
+  .nav-tabs .w{padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .tab{padding:9px 12px;font-size:12px;}
+  .toolbar .w{padding:0 12px;flex-wrap:wrap;gap:8px;}
+  .search-wrap{max-width:100%;flex:1 1 100%;order:-1;}
+  .sort-label{display:none;}
+  .content .w{padding:0 10px;}
+
+  /* Cards go vertical on mobile */
+  .card{flex-direction:column;}
+  .card-thumb{width:100%;height:100px;align-self:auto;}
+  .card-thumb-overlay{font-size:22px;}
+  .card-body{padding:8px 10px;}
+  .card-meta{gap:12px;}
+  /* Hide progress bar + badge squares on mobile — too cramped */
+  .ach-bar-row{display:none;}
+  .card-actions{flex-direction:row;padding:4px 10px 8px;justify-content:flex-end;}
+}
 
 /* ── BADGE TOOLTIP ── */
 .badge-tooltip{
@@ -309,7 +351,6 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
       <div id="syncStatus" style="align-self:center;min-width:70px;text-align:right;"></div>
       <div class="stat-box"><div class="num" id="statTotal">0</div><div class="lbl">Total</div></div>
       <div class="stat-box"><div class="num" id="statComplete">0</div><div class="lbl">Complete</div></div>
-      <div class="stat-box"><div class="num" id="statAvg">0%</div><div class="lbl">Avg Progress</div></div>
     </div>
   </div>
 </div>
@@ -744,6 +785,7 @@ function render(){
 function cardHTML(it){
   const st=CAT[it.category]||CAT.other;
   const badges=it.badges||[];
+  const secrets=it.secrets||[];
   const pct=bpct(badges);
   const checkedN=badges.filter(b=>b.checked).length;
   const init=it.title.slice(0,3).toUpperCase();
@@ -752,27 +794,41 @@ function cardHTML(it){
     ?`<img src="${it.thumbImg}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`
     :`<span style="position:relative;z-index:1">${init}</span>`;
 
-  // 6 badge slots: 5 regular + 1 overflow/empty
-  const ordered=[...badges.filter(b=>b.checked),...badges.filter(b=>!b.checked)];
+  // Badge ordering: starred first, then checked, then unchecked
+  // Starred badges from both normal and secrets pool
+  const allBadges=[
+    ...badges.map((b,i)=>({...b,_src:'normal',_i:i})),
+    ...secrets.map((b,i)=>({...b,_src:'secret',_i:i})),
+  ];
+  const starred = allBadges.filter(b=>b.starred);
+  const normalChecked = badges.map((b,i)=>({...b,_src:'normal',_i:i})).filter(b=>!b.starred&&b.checked);
+  const normalUnchecked = badges.map((b,i)=>({...b,_src:'normal',_i:i})).filter(b=>!b.starred&&!b.checked);
+  const ordered=[...starred,...normalChecked,...normalUnchecked];
+
   let bHTML='';
   for(let i=0;i<5;i++){
     if(i<ordered.length){
       const b=ordered[i];
-      const bi=badges.indexOf(b);
-      const op=b.checked?'1':'0.32';
-      const bg=b.checked?st.bg:'var(--tag-bg)';
-      const col=b.checked?st.ac:'var(--text-secondary)';
-      const bc=b.checked?st.ac+'55':'var(--border)';
+      const isSecret=b._src==='secret';
+      const origIdx=b._i;
+      const isChecked=b.checked;
+      const isStarred=b.starred;
+      const op=isChecked||isSecret?'1':'0.32';
+      const bg=isSecret?'#2a2010':(isChecked?st.bg:'var(--tag-bg)');
+      const col=isSecret?'var(--gold)':(isChecked?st.ac:'var(--text-secondary)');
+      const bc=isSecret?'var(--gold)55':(isChecked?st.ac+'55':'var(--border)');
       const lbl=(b.sq||b.name).slice(0,4).toUpperCase();
-      bHTML+=`<div class="badge-sq" style="background:${bg};border-color:${bc};color:${col};opacity:${op};"
-        onmouseenter="showTT(event,'${it.id}',${bi})" onmouseleave="hideTT()">${lbl}</div>`;
+      const ttCall=isSecret?`showTTSecret(event,'${it.id}',${origIdx})`:`showTT(event,'${it.id}',${origIdx})`;
+      bHTML+=`<div class="badge-sq${isStarred?' starred':''}" style="background:${bg};border-color:${bc};color:${col};opacity:${op};"
+        onmouseenter="${ttCall}" onmouseleave="hideTT()">${lbl}</div>`;
     } else {
       bHTML+=`<div class="badge-empty"></div>`;
     }
   }
-  // Slot 6 — overflow click → badge detail page
-  if(ordered.length>5){
-    const ov=ordered.length-5;
+  // Slot 6 — total visible = all normal + all secrets for overflow count
+  const totalAll=badges.length+secrets.length;
+  if(totalAll>5){
+    const ov=totalAll-5;
     bHTML+=`<div class="badge-overflow" onclick="openBDP('${it.id}')" title="View all badges">+${ov}</div>`;
   } else {
     bHTML+=`<div class="badge-empty"></div>`;
@@ -820,8 +876,6 @@ function updateCounts(){
 function updateStats(){
   document.getElementById('statTotal').textContent=items.length;
   document.getElementById('statComplete').textContent=items.filter(i=>bpct(i.badges)===100).length;
-  const avg=items.length?Math.round(items.reduce((s,i)=>s+bpct(i.badges),0)/items.length):0;
-  document.getElementById('statAvg').textContent=avg+'%';
 }
 
 // ── TOOLTIP ──────────────────────────────────────────────────────
@@ -832,9 +886,19 @@ function showTT(e,itemId,bi){
   const lbl=(b.sq||b.name).slice(0,4).toUpperCase();
   document.getElementById('btIcon').textContent=lbl;
   document.getElementById('btIcon').style.cssText=`background:${st.bg};color:${st.ac};border:1px solid ${st.ac}44;`;
-  document.getElementById('btName').textContent=b.name;
+  document.getElementById('btName').textContent=b.name+(b.starred?' ⭐':'');
   document.getElementById('btDesc').textContent=b.desc||'No description.';
   document.getElementById('btFoot').textContent=b.checked?'✓ Achievement unlocked':'Not yet achieved';
+  const tt=document.getElementById('badgeTooltip');tt.classList.add('show');posTT(e,tt);
+}
+function showTTSecret(e,itemId,si){
+  const it=items.find(x=>x.id===itemId);if(!it)return;
+  const b=(it.secrets||[])[si];if(!b)return;
+  document.getElementById('btIcon').textContent=(b.sq||'???').slice(0,4).toUpperCase();
+  document.getElementById('btIcon').style.cssText=`background:#2a2010;color:var(--gold);border:1px solid #f5c51844;`;
+  document.getElementById('btName').textContent=b.name+(b.starred?' ⭐':'');
+  document.getElementById('btDesc').textContent=b.desc||'No description.';
+  document.getElementById('btFoot').textContent='🔒 Secret Achievement';
   const tt=document.getElementById('badgeTooltip');tt.classList.add('show');posTT(e,tt);
 }
 function posTT(e,tt){
@@ -889,10 +953,11 @@ function renderBDP(){
   document.getElementById('bdpFill').style.cssText=`width:${pct}%;background:${pcolor(pct)};`;
   document.getElementById('bdpProgressText').textContent=`${pct}% complete`;
 
-  // Normal badge grid — each row is clickable to toggle
+  // Normal badge grid — each row clickable to toggle, star button on right
   document.getElementById('bdpGrid').innerHTML=badges.map((b,i)=>{
     const lbl=(b.sq||b.name).slice(0,4).toUpperCase();
     const locked=!b.checked;
+    const isStarred=b.starred;
     return `<div class="bdp-badge-row ${locked?'':'unlocked'}" onclick="bdpToggle('${itemId}',${i})">
       <div class="bdp-badge-icon ${locked?'locked':''}" style="background:${st.bg};color:${st.ac};border:1px solid ${st.ac}${locked?'33':'66'};">${lbl}</div>
       <div class="bdp-badge-info">
@@ -900,16 +965,20 @@ function renderBDP(){
         <div class="bdp-badge-desc">${b.desc||''}</div>
         <div class="bdp-badge-status ${locked?'no':'ok'}">${locked?'○ Unachieved':'✓ Achieved'}</div>
       </div>
-      <div style="flex-shrink:0;width:18px;height:18px;border-radius:50%;border:2px solid ${locked?'#3a5a7a':st.ac};background:${locked?'transparent':st.ac};display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">${locked?'':'✓'}</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;">
+        <div style="width:18px;height:18px;border-radius:50%;border:2px solid ${locked?'#3a5a7a':st.ac};background:${locked?'transparent':st.ac};display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">${locked?'':'✓'}</div>
+        <button class="bdp-star-btn ${isStarred?'starred':''}" onclick="event.stopPropagation();bdpStar('${itemId}',${i})" title="${isStarred?'Unstar':'Star — show on card'}">${isStarred?'⭐':'☆'}</button>
+      </div>
     </div>`;
   }).join('');
 
-  // Secret badge grid (not clickable, always golden)
+  // Secret badge grid — star button, not toggle
   const secSection=document.getElementById('bdpSecretSection');
   if(secrets.length){
     secSection.style.display='block';
-    document.getElementById('bdpSecretGrid').innerHTML=secrets.map(b=>{
+    document.getElementById('bdpSecretGrid').innerHTML=secrets.map((b,i)=>{
       const lbl=(b.sq||'???').slice(0,4).toUpperCase();
+      const isStarred=b.starred;
       return `<div class="bdp-badge-row secret">
         <div class="bdp-badge-icon secret-icon">${lbl}</div>
         <div class="bdp-badge-info">
@@ -917,6 +986,7 @@ function renderBDP(){
           <div class="bdp-badge-desc">${b.desc||''}</div>
           <div class="bdp-badge-status secret-lbl">🔒 Secret Achievement</div>
         </div>
+        <button class="bdp-star-btn ${isStarred?'starred':''}" onclick="bdpStarSecret('${itemId}',${i})" title="${isStarred?'Unstar':'Star — show on card'}">${isStarred?'⭐':'☆'}</button>
       </div>`;
     }).join('');
   } else {
@@ -924,14 +994,28 @@ function renderBDP(){
   }
 }
 
-// Toggle a badge directly from the BDP and instantly refresh both the page and the card list
+// Toggle a badge achievement from BDP
 function bdpToggle(itemId, badgeIndex){
   const it=items.find(x=>x.id===itemId);if(!it)return;
   if(!it.badges||!it.badges[badgeIndex])return;
   it.badges[badgeIndex].checked = !it.badges[badgeIndex].checked;
-  save();
-  render();       // refresh card list so bar/count update live
-  renderBDP();    // refresh detail page in place
+  save(); render(); renderBDP();
+}
+
+// Star/unstar a normal badge from BDP
+function bdpStar(itemId, badgeIndex){
+  const it=items.find(x=>x.id===itemId);if(!it)return;
+  if(!it.badges||!it.badges[badgeIndex])return;
+  it.badges[badgeIndex].starred = !it.badges[badgeIndex].starred;
+  save(); render(); renderBDP();
+}
+
+// Star/unstar a secret badge from BDP
+function bdpStarSecret(itemId, secretIndex){
+  const it=items.find(x=>x.id===itemId);if(!it)return;
+  if(!it.secrets||!it.secrets[secretIndex])return;
+  it.secrets[secretIndex].starred = !it.secrets[secretIndex].starred;
+  save(); render(); renderBDP();
 }
 
 document.getElementById('bdpClose').addEventListener('click',()=>{document.getElementById('bdpOverlay').classList.remove('open');bdpCurrentId=null;});
