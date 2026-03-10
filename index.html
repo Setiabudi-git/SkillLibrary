@@ -119,31 +119,31 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .ach-count{font-size:13px;color:var(--text-primary);}
 .ach-bar-row{display:flex;align-items:center;gap:10px;}
 
-/* Bar */
-.progress-bar-outer{width:340px;max-width:100%;flex-shrink:1;height:7px;background:var(--progress-bg);border-radius:1px;overflow:hidden;}
-.progress-bar-inner{height:100%;border-radius:1px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+/* Bar — fixed width, doesn't stretch */
+.progress-bar-outer{width:280px;flex-shrink:0;height:8px;background:var(--progress-bg);border-radius:2px;overflow:hidden;}
+.progress-bar-inner{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1);}
 
-/* Badge strip — 6 slots × 36px + 5 gaps × 4px = 236px */
-.badge-squares{display:flex;gap:4px;flex-shrink:0;width:236px;}
+/* Badge strip — 6 slots × 44px + 5 gaps × 5px = 289px */
+.badge-squares{display:flex;gap:5px;flex-shrink:0;}
 .badge-sq{
-  width:36px;height:36px;flex-shrink:0;border-radius:3px;
+  width:44px;height:44px;flex-shrink:0;border-radius:3px;
   display:flex;align-items:center;justify-content:center;
-  font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;
+  font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;
   overflow:hidden;white-space:nowrap;line-height:1;
   border:1px solid var(--border);cursor:pointer;position:relative;
   transition:filter .12s,transform .12s;
 }
 .badge-sq:hover{filter:brightness(1.35);transform:scale(1.1);z-index:10;}
 .badge-overflow{
-  width:36px;height:36px;flex-shrink:0;border-radius:3px;
+  width:44px;height:44px;flex-shrink:0;border-radius:3px;
   display:flex;align-items:center;justify-content:center;
-  font-size:12px;font-weight:700;
+  font-size:13px;font-weight:700;
   background:var(--bg-secondary);border:1px solid var(--border);
   color:var(--text-secondary);cursor:pointer;
   transition:background .12s;
 }
 .badge-overflow:hover{background:var(--accent-teal);color:#fff;border-color:var(--accent-teal);}
-.badge-empty{width:36px;height:36px;flex-shrink:0;border-radius:3px;border:1px dashed #253a52;opacity:.25;}
+.badge-empty{width:44px;height:44px;flex-shrink:0;border-radius:3px;border:1px dashed #253a52;opacity:.25;}
 
 /* Card actions */
 .card-actions{flex-shrink:0;padding:10px 20px 10px 4px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;}
