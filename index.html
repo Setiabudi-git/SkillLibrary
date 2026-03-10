@@ -183,7 +183,9 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
   .card-body{padding:8px 10px;}
   .card-meta{gap:12px;}
   /* Hide progress bar + badge squares on mobile — too cramped */
-  .ach-bar-row{display:none;}
+  /* .ach-bar-row{display:none;} — removed, now shown but allowed to wrap/shrink */
+  .progress-bar-outer{width:100%;flex-shrink:1;}
+  .badge-squares{flex-shrink:0;}
   .card-actions{flex-direction:row;padding:4px 10px 8px;justify-content:flex-end;}
 }
 
