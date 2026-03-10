@@ -42,10 +42,10 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .tab{padding:9px 16px;font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap;}
 .tab:hover{color:var(--text-primary);}
 .tab.active{color:var(--accent-blue);border-bottom-color:var(--accent-blue);background:rgba(102,192,244,.05);}
-/* Other dropdown */
+/* Other dropdown — fixed position, placed by JS so it escapes overflow clipping */
 .tab-other-wrap{position:relative;display:flex;align-items:stretch;}
 .tab-dropdown{
-  display:none;position:absolute;top:100%;left:0;z-index:200;
+  display:none;position:fixed;z-index:500;
   background:var(--bg-secondary);border:1px solid var(--border);border-radius:4px;
   min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.4);
   overflow:hidden;
@@ -67,10 +67,10 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .search-wrap input:focus{border-color:var(--accent-blue);}
 .search-wrap input::placeholder{color:var(--text-secondary);}
 .search-wrap svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);opacity:.5;}
-.sort-label{margin-left:auto;font-size:11px;color:var(--text-secondary);}
+.sort-label{font-size:11px;color:var(--text-secondary);}
 .sort-btn{background:none;border:none;font-size:12px;color:var(--text-secondary);cursor:pointer;padding:3px 7px;border-radius:3px;}
 .sort-btn:hover,.sort-btn.active{color:var(--accent-blue);}
-.add-btn{background:var(--accent-teal);color:#fff;border:none;padding:6px 14px;border-radius:3px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:.4px;}
+.add-btn{margin-left:auto;background:var(--accent-teal);color:#fff;border:none;padding:6px 14px;border-radius:3px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Rajdhani',sans-serif;letter-spacing:.4px;}
 .add-btn:hover{background:#0f8de0;}
 
 /* ── CONTENT ── */
@@ -96,15 +96,12 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 }
 @keyframes slideIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
 
-/* Thumbnail */
-.card-thumb{width:180px;flex-shrink:0;position:relative;overflow:hidden;align-self:stretch;border-radius:3px 0 0 3px;}
-.thumb-inner{width:100%;height:100%;min-height:72px;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;text-align:center;padding:8px;letter-spacing:.5px;position:relative;}
-.card-thumb-overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;cursor:pointer;font-size:18px;z-index:2;}
-.card-thumb:hover .card-thumb-overlay{opacity:1;}
-.thumb-file-input{display:none;}
+/* Thumbnail — category color block, no image upload */
+.card-thumb{width:120px;flex-shrink:0;position:relative;align-self:stretch;border-radius:3px 0 0 3px;}
+.thumb-inner{width:100%;height:100%;min-height:90px;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;text-align:center;padding:8px;letter-spacing:.5px;}
 
 /* Card body */
-.card-body{flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:5px;min-width:0;}
+.card-body{flex:1;padding:14px 18px;display:flex;flex-direction:column;gap:8px;min-width:0;}
 .card-top{display:flex;align-items:flex-start;gap:10px;}
 .card-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--text-bright);letter-spacing:.3px;flex:1;cursor:pointer;}
 .card-title:hover{color:var(--accent-blue);text-decoration:underline;text-underline-offset:3px;}
@@ -773,15 +770,6 @@ function render(){
   const el=document.getElementById('cardList');
   if(!list.length){el.innerHTML=`<div class="empty"><p>No items found.</p></div>`;return;}
   el.innerHTML=list.map(cardHTML).join('');
-  list.forEach(it=>{
-    const inp=document.getElementById('ti-'+it.id);
-    if(inp)inp.addEventListener('change',e=>{
-      const f=e.target.files[0];if(!f)return;
-      const r=new FileReader();
-      r.onload=ev=>{const i=items.findIndex(x=>x.id===it.id);if(i>-1){items[i].thumbImg=ev.target.result;save();render();}};
-      r.readAsDataURL(f);
-    });
-  });
   updateCounts();updateStats();
 }
 
@@ -792,20 +780,15 @@ function cardHTML(it){
   const pct=bpct(badges);
   const checkedN=badges.filter(b=>b.checked).length;
   const init=it.title.slice(0,3).toUpperCase();
-  const thumbBg=it.thumbImg?'':`background:${st.bg};color:${st.ac};`;
-  const thumbC=it.thumbImg
-    ?`<img src="${it.thumbImg}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">`
-    :`<span style="position:relative;z-index:1">${init}</span>`;
 
   // Badge ordering: starred first, then checked, then unchecked
-  // Starred badges from both normal and secrets pool
   const allBadges=[
     ...badges.map((b,i)=>({...b,_src:'normal',_i:i})),
     ...secrets.map((b,i)=>({...b,_src:'secret',_i:i})),
   ];
-  const starred = allBadges.filter(b=>b.starred);
-  const normalChecked = badges.map((b,i)=>({...b,_src:'normal',_i:i})).filter(b=>!b.starred&&b.checked);
-  const normalUnchecked = badges.map((b,i)=>({...b,_src:'normal',_i:i})).filter(b=>!b.starred&&!b.checked);
+  const starred=allBadges.filter(b=>b.starred);
+  const normalChecked=badges.map((b,i)=>({...b,_src:'normal',_i:i})).filter(b=>!b.starred&&b.checked);
+  const normalUnchecked=badges.map((b,i)=>({...b,_src:'normal',_i:i})).filter(b=>!b.starred&&!b.checked);
   const ordered=[...starred,...normalChecked,...normalUnchecked];
 
   let bHTML='';
@@ -828,20 +811,16 @@ function cardHTML(it){
       bHTML+=`<div class="badge-empty"></div>`;
     }
   }
-  // Slot 6 — total visible = all normal + all secrets for overflow count
   const totalAll=badges.length+secrets.length;
   if(totalAll>5){
-    const ov=totalAll-5;
-    bHTML+=`<div class="badge-overflow" onclick="openBDP('${it.id}')" title="View all badges">+${ov}</div>`;
+    bHTML+=`<div class="badge-overflow" onclick="openBDP('${it.id}')" title="View all badges">+${totalAll-5}</div>`;
   } else {
     bHTML+=`<div class="badge-empty"></div>`;
   }
 
   return `<div class="card" data-id="${it.id}">
     <div class="card-thumb">
-      <div class="thumb-inner" style="${thumbBg}">${thumbC}</div>
-      <div class="card-thumb-overlay" onclick="document.getElementById('ti-${it.id}').click()">🖼️</div>
-      <input type="file" id="ti-${it.id}" class="thumb-file-input" accept="image/*">
+      <div class="thumb-inner" style="background:${st.bg};color:${st.ac};">${init}</div>
     </div>
     <div class="card-body">
       <div class="card-top">
@@ -1040,8 +1019,8 @@ function openModal(item=null){
   document.getElementById('fHoursM').value=hm.m;
   document.getElementById('customMins').value='';
   updateHrsPreview();
-  modalBadges=(item?.badges||[]).map(b=>({...b}));
-  modalSecrets=(item?.secrets||[]).map(b=>({...b}));
+  modalBadges=(item?.badges||[]).map(b=>({...b})).sort((a,b)=>a.name.localeCompare(b.name));
+  modalSecrets=(item?.secrets||[]).map(b=>({...b})).sort((a,b)=>a.name.localeCompare(b.name));
   renderModalBadges();
   renderModalSecrets();
   document.getElementById('overlay').classList.add('open');
@@ -1105,6 +1084,7 @@ document.getElementById('addNormalBtn').addEventListener('click',()=>{
   const n=document.getElementById('nName').value.trim();if(!n)return;
   const d=document.getElementById('nDesc').value.trim();
   modalBadges.push({sq,name:n,desc:d,checked:false});
+  modalBadges.sort((a,b)=>a.name.localeCompare(b.name));
   document.getElementById('nSq').value='';
   document.getElementById('nName').value='';
   document.getElementById('nDesc').value='';
@@ -1134,6 +1114,7 @@ document.getElementById('addSecretBtn').addEventListener('click',()=>{
   const n=document.getElementById('sName').value.trim();if(!n)return;
   const d=document.getElementById('sDesc').value.trim();
   modalSecrets.push({sq,name:n,desc:d});
+  modalSecrets.sort((a,b)=>a.name.localeCompare(b.name));
   document.getElementById('sSq').value='';
   document.getElementById('sName').value='';
   document.getElementById('sDesc').value='';
@@ -1155,7 +1136,6 @@ document.getElementById('saveItem').addEventListener('click',()=>{
     hours:minsToH(h,m),lastPlayed:today(),
     badges:modalBadges.map(b=>({...b})),
     secrets:modalSecrets.map(b=>({...b})),
-    thumbImg:existing?.thumbImg||null,
   };
   if(editingId){const i=items.findIndex(x=>x.id===editingId);if(i>-1)items[i]=item;}
   else items.unshift(item);
@@ -1215,7 +1195,20 @@ document.querySelectorAll('.tab[data-filter]').forEach(b=>{
   if(b.dataset.filter==='other-menu'){
     b.addEventListener('click',e=>{
       e.stopPropagation();
-      b.parentElement.classList.toggle('open');
+      const wrap=b.parentElement;
+      const isOpen=wrap.classList.contains('open');
+      wrap.classList.toggle('open');
+      if(!isOpen){
+        // Position dropdown below the button using fixed coords
+        const rect=b.getBoundingClientRect();
+        const dd=document.getElementById('tabDropdown');
+        dd.style.top=(rect.bottom+2)+'px';
+        // Align right edge to button right, but clamp to viewport
+        const ddW=Math.max(160, dd.offsetWidth||160);
+        let left=rect.right-ddW;
+        if(left<8) left=8;
+        dd.style.left=left+'px';
+      }
     });
   } else {
     b.addEventListener('click',()=>setFilter(b.dataset.filter));
