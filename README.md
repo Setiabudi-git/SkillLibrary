@@ -11,13 +11,13 @@
     4. Press Personal Access Token
     5. Press Token (classic)
     6. Generate new token (classic)
-    7. Name it whatever, set no expiration date
+    7. Name it whatever, set no expiration date and only checklisted the GIST
     8. Copy the token.
     9. Open the website (https://setiabudi-git.github.io/SkillLibrary-Repo/)
     10. Press that "🔑 Set token" on the top
     11. Paste that token per device (the token is saved on localbrowser on each device)
 
-  You can upload thumbnail but i do not recommend to do so, if you want you need to upload very small image instead (i tried to upload a large image, it eat the whole space instantly and the whole thing broke), the JSON text file limit 10MB (that is too large for just a text file). The request limit (update limit/day) is practically none. you can go wild with this thing.
+  I removed the thumbnail for game feature because its so unfeasible tbh, the gist limit is only 10 MB, its way too small to add an image to each game and badge, but its large enough for just text, practically the limitation on how much game and badge you can create is none.
 
   Idk have fun.
 
