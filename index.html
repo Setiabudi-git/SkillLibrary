@@ -293,6 +293,12 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .badge-add-form button:hover{background:var(--accent-teal);color:#fff;}
 .badge-form-labels{display:grid;grid-template-columns:56px 1fr 1.6fr auto;gap:6px;margin-bottom:3px;}
 .badge-form-labels span{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);}
+@media(max-width:700px){
+  .badge-add-form{grid-template-columns:52px 1fr auto;grid-template-rows:auto auto;}
+  .badge-add-form input:nth-child(3){grid-column:1/-1;}
+  .badge-form-labels{grid-template-columns:52px 1fr auto;}
+  .badge-form-labels span:nth-child(3){display:none;}
+}
 
 /* Badge list rows */
 .badge-list{display:flex;flex-direction:column;gap:3px;max-height:190px;overflow-y:auto;}
@@ -1021,8 +1027,8 @@ function openModal(item=null){
   document.getElementById('fHoursM').value=hm.m;
   document.getElementById('customMins').value='';
   updateHrsPreview();
-  modalBadges=(item?.badges||[]).map(b=>({...b})).sort((a,b)=>a.name.localeCompare(b.name));
-  modalSecrets=(item?.secrets||[]).map(b=>({...b})).sort((a,b)=>a.name.localeCompare(b.name));
+  modalBadges=(item?.badges||[]).map(b=>({...b})).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
+  modalSecrets=(item?.secrets||[]).map(b=>({...b})).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
   renderModalBadges();
   renderModalSecrets();
   document.getElementById('overlay').classList.add('open');
@@ -1086,7 +1092,7 @@ document.getElementById('addNormalBtn').addEventListener('click',()=>{
   const n=document.getElementById('nName').value.trim();if(!n)return;
   const d=document.getElementById('nDesc').value.trim();
   modalBadges.push({sq,name:n,desc:d,checked:false});
-  modalBadges.sort((a,b)=>a.name.localeCompare(b.name));
+  modalBadges.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
   document.getElementById('nSq').value='';
   document.getElementById('nName').value='';
   document.getElementById('nDesc').value='';
@@ -1116,7 +1122,7 @@ document.getElementById('addSecretBtn').addEventListener('click',()=>{
   const n=document.getElementById('sName').value.trim();if(!n)return;
   const d=document.getElementById('sDesc').value.trim();
   modalSecrets.push({sq,name:n,desc:d});
-  modalSecrets.sort((a,b)=>a.name.localeCompare(b.name));
+  modalSecrets.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
   document.getElementById('sSq').value='';
   document.getElementById('sName').value='';
   document.getElementById('sDesc').value='';
@@ -1160,8 +1166,19 @@ document.getElementById('avatarFileInput').addEventListener('change',function(e)
 function openCtx(e,id){
   e.stopPropagation();ctxId=id;
   const m=document.getElementById('ctxMenu');
-  m.style.top=e.clientY+'px';m.style.left=e.clientX+'px';
   m.classList.add('open');
+  // Measure after display so offsetWidth is real
+  const mw=m.offsetWidth||150;
+  const mh=m.offsetHeight||80;
+  const vw=window.innerWidth;
+  const vh=window.innerHeight;
+  // Prefer left of cursor; clamp to viewport
+  let x=e.clientX-mw;
+  let y=e.clientY;
+  if(x<8) x=e.clientX; // fallback right if no room
+  if(y+mh>vh-8) y=vh-mh-8;
+  m.style.left=x+'px';
+  m.style.top=y+'px';
 }
 document.addEventListener('click',e=>{
   // Close context menu
