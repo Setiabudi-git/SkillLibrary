@@ -613,7 +613,7 @@ async function saveTokenAndSync(){
   render();
 }
 
-async function loadFromGist(){
+async function loadFromGist(localData){
   const tok = getToken();
   if(!tok){ setSyncUI('notoken',''); return false; }
   setSyncUI('loading','');
@@ -637,20 +637,31 @@ async function loadFromGist(){
     logSync('Files: '+fileNames.join(', '));
     const raw = gist.files?.[GIST_FILE]?.content;
     if(raw){
-      const p = JSON.parse(raw);
-      items  = p.items  || [];
-      banner = p.banner || null;
-      localStorage.setItem(SK, raw);
-      logSync('✓ Loaded '+items.length+' items');
+      const gistData = JSON.parse(raw);
+      const gistTs  = gistData.savedAt || 0;
+      const localTs = localData?.savedAt || 0;
+      if(gistTs >= localTs){
+        // Gist is same age or newer — use it
+        items  = gistData.items  || [];
+        banner = gistData.banner || null;
+        localStorage.setItem(SK, raw);
+        logSync('✓ Loaded from Gist ('+items.length+' items)');
+      } else {
+        // Local is newer — Gist push must have failed last time, re-push now
+        logSync('⚠ Local is newer than Gist — re-pushing local data');
+        clearTimeout(syncTimeout);
+        syncTimeout = setTimeout(saveToGist, 300);
+      }
     } else {
-      logSync('"'+GIST_FILE+'" not in gist yet — will create on first save');
+      logSync('"'+GIST_FILE+'" not in Gist yet — will create on first save');
     }
     setSyncUI('saved','');
     setTimeout(()=>setSyncUI('idle',''), 2500);
     return true;
   } catch(e){
     logSync('✗ '+e.message);
-    try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;}}catch{}
+    // Network error — keep local data, never wipe it
+    if(localData){ items=localData.items||[]; banner=localData.banner||null; }
     setSyncUI('error', e.message);
     setTimeout(()=>setSyncUI('idle',''), 8000);
     return false;
@@ -660,7 +671,7 @@ async function loadFromGist(){
 async function saveToGist(){
   const tok = getToken();
   if(!tok){ setSyncUI('notoken',''); return; }
-  const payload = JSON.stringify({items, banner});
+  const payload = JSON.stringify({items, banner, savedAt: Date.now()});
   localStorage.setItem(SK, payload);
   setSyncUI('saving','');
   logSync('Saving…');
@@ -690,7 +701,9 @@ async function saveToGist(){
 }
 
 function save(){
-  localStorage.setItem(SK, JSON.stringify({items,banner}));
+  // Always write to localStorage immediately with timestamp — this is the safety net
+  const payload = JSON.stringify({items, banner, savedAt: Date.now()});
+  localStorage.setItem(SK, payload);
   clearTimeout(syncTimeout);
   setSyncUI('saving','');
   syncTimeout = setTimeout(saveToGist, 800);
@@ -698,10 +711,13 @@ function save(){
 
 async function load(){
   if(!getToken()){ setSyncUI('notoken',''); }
-  try{const r=localStorage.getItem(SK);if(r){const p=JSON.parse(r);items=p.items||[];banner=p.banner||null;}}catch{}
+  // Always load localStorage first — it's always the freshest local state
+  let localData = null;
+  try{const r=localStorage.getItem(SK);if(r){localData=JSON.parse(r);items=localData.items||[];banner=localData.banner||null;}}catch{}
   if(banner) document.getElementById('avatarEl').innerHTML=`<img src="${banner}" alt="">`;
   if(items.length) render();
-  await loadFromGist();
+  // Then try Gist — but only replace local if Gist is newer
+  await loadFromGist(localData);
   if(!items.length) seed();
   if(banner) document.getElementById('avatarEl').innerHTML=`<img src="${banner}" alt="">`;
   render();
