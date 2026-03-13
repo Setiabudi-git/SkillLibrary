@@ -156,7 +156,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .dots-btn:hover{color:var(--accent-blue);}
 
 /* Card buttons — accent left-border style matching the dark vibe */
-.card-btns{display:flex;gap:6px;margin-top:auto;padding-top:12px;border-top:1px solid var(--border);}
+.card-btns{display:flex;gap:6px;margin-top:auto;padding-top:12px;}
 .card-steam-btn{
   background:var(--bg-secondary);border:1px solid var(--border);
   border-left-width:3px;
@@ -240,7 +240,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 
 /* Stat list rows in modal */
 .stat-list{display:flex;flex-direction:column;gap:3px;max-height:200px;overflow-y:auto;}
-.stat-list-item{display:grid;grid-template-columns:1fr 90px auto 20px;align-items:center;gap:7px;padding:6px 10px;background:var(--bg-base);border:1px solid var(--border);border-radius:3px;}
+.stat-list-item{display:grid;grid-template-columns:1fr 68px 90px auto 20px;align-items:center;gap:7px;padding:6px 10px;background:var(--bg-base);border:1px solid var(--border);border-radius:3px;}
 .stat-list-item.is-infinite{border-color:#4fc08d44;background:#0e221844;}
 .sli-name-inp{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text-primary);font-size:12px;font-weight:600;font-family:'Inter',sans-serif;width:100%;padding:1px 2px;outline:none;}
 .sli-name-inp:focus{border-bottom-color:var(--accent-blue);}
@@ -256,7 +256,20 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
   .card-steam-btn{font-size:11px;padding:6px 10px;}
 }
 
-/* Star button in BDP */
+/* Time input beside + button in stat viewer */
+.stat-time-input{
+  display:flex;align-items:center;gap:4px;flex-shrink:0;
+}
+.stat-time-input input{
+  width:28px;height:28px;border-radius:3px;border:1px solid var(--border);
+  background:var(--bg-secondary);color:var(--accent-blue);
+  font-size:12px;font-family:'Inter',sans-serif;text-align:center;outline:none;padding:0;
+  -moz-appearance:textfield;appearance:textfield;
+}
+.stat-time-input input::-webkit-outer-spin-button,
+.stat-time-input input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.stat-time-input input:focus{border-color:#4fc08d;}
+.stat-time-input span{font-size:10px;color:var(--text-secondary);white-space:nowrap;}
 .bdp-star-btn{
   background:none;border:1px solid var(--border);border-radius:3px;
   color:var(--text-secondary);cursor:pointer;font-size:14px;
@@ -403,9 +416,15 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 
 /* Badge list rows */
 .badge-list{display:flex;flex-direction:column;gap:3px;max-height:190px;overflow-y:auto;}
-.badge-list-item{display:grid;grid-template-columns:13px 36px 1fr 1.6fr 20px;align-items:center;gap:7px;padding:5px 8px;background:var(--bg-base);border:1px solid var(--border);border-radius:3px;}
+.badge-list-item{display:grid;grid-template-columns:13px 36px 1fr 1.6fr 140px 20px;align-items:center;gap:7px;padding:5px 8px;background:var(--bg-base);border:1px solid var(--border);border-radius:3px;}
 .badge-list-item.secret{border-color:#b8960033;}
 .badge-list-item input[type=checkbox]{accent-color:var(--accent-teal);width:13px;height:13px;cursor:pointer;}
+.bli-trigger{display:flex;align-items:center;gap:4px;}
+.bli-trigger select{background:var(--bg-secondary);border:1px solid var(--border);border-radius:2px;color:var(--text-secondary);font-size:10px;font-family:'Inter',sans-serif;padding:2px 4px;outline:none;max-width:80px;cursor:pointer;}
+.bli-trigger select:focus{border-color:var(--accent-blue);}
+.bli-trigger input[type=number]{background:var(--bg-secondary);border:1px solid var(--border);border-radius:2px;color:var(--accent-blue);font-size:10px;font-family:'Inter',sans-serif;padding:2px 4px;outline:none;width:40px;text-align:center;}
+.bli-trigger input[type=number]:focus{border-color:var(--accent-blue);}
+.bli-trigger input[type=number]:disabled{opacity:.3;}
 .bli-sq{
   width:28px;height:28px;border-radius:2px;
   display:flex;align-items:center;justify-content:center;
@@ -596,8 +615,8 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 
     <!-- Normal Badges -->
     <div class="modal-section">🏆 Badges — check to unlock · progress = checked ÷ total</div>
-    <div class="badge-form-labels">
-      <span>Square</span><span>Name</span><span>Description</span><span></span>
+    <div class="badge-form-labels" style="grid-template-columns:56px 1fr 1.6fr 140px auto;">
+      <span>Square</span><span>Name</span><span>Description</span><span>Auto-unlock trigger</span><span></span>
     </div>
     <div class="badge-add-form" id="normalAddForm">
       <input type="text" class="sq-input" id="nSq" placeholder="ABCD" maxlength="4">
@@ -624,10 +643,14 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
     <!-- Statistics -->
     <div class="modal-section" style="color:#4fc08d;border-bottom-color:#4fc08d44;">📊 Statistics — track countable progress per item</div>
     <div class="stat-form-labels">
-      <span>Stat Name</span><span>Max / Goal</span><label class="inf-label"><input type="checkbox" id="stInf"> Infinite</label><span></span>
+      <span>Stat Name</span><span>Unit</span><span>Max / Goal</span><label class="inf-label"><input type="checkbox" id="stInf"> Infinite</label><span></span>
     </div>
-    <div class="stat-add-form">
+    <div class="stat-add-form" style="grid-template-columns:1fr 80px 90px 1fr auto;">
       <input type="text" id="stName" placeholder="e.g. Vocabulary Words…">
+      <select id="stUnit" style="background:var(--bg-base);border:1px solid var(--border);border-radius:3px;padding:5px 6px;color:var(--text-primary);font-size:12px;font-family:'Inter',sans-serif;outline:none;">
+        <option value="unit">Unit</option>
+        <option value="time">Time</option>
+      </select>
       <input type="number" class="num-input" id="stMax" value="100" min="1" placeholder="100">
       <span></span>
       <button id="addStatBtn" style="border-color:#4fc08d44;color:#4fc08d;">+ Add</button>
@@ -1109,7 +1132,7 @@ function renderBDP(){
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0;">
         <div style="width:18px;height:18px;border-radius:50%;border:2px solid ${locked?'#3a5a7a':st.ac};background:${locked?'transparent':st.ac};display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;">${locked?'':'✓'}</div>
-        <button class="bdp-star-btn ${isStarred?'starred':''}" onclick="event.stopPropagation();bdpStar('${itemId}',${i})" title="${isStarred?'Unstar':'Star — show on card'}">${isStarred?'⭐':'☆'}</button>
+        <button class="bdp-star-btn ${isStarred?'starred':''}" onclick="event.stopPropagation();bdpStar('${itemId}',${i})" title="Star" style="${locked?'visibility:hidden;':''}">${isStarred?'⭐':'☆'}</button>
       </div>
     </div>`;
   }).join('');
@@ -1218,16 +1241,24 @@ function renderModalBadges(){
   const chk=modalBadges.filter(b=>b.checked).length,tot=modalBadges.length;
   const pct=tot?Math.round(chk/tot*100):0;
   document.getElementById('badgeProgNote').textContent=tot?`Progress: ${chk}/${tot} checked = ${pct}%`:'No badges yet.';
+  // Build stat options for trigger dropdown — Total Played first, then user stats
+  const statOpts=`<option value="">— none —</option><option value="__totalPlayed">Total Played</option>`+modalStats.map((s,si)=>
+    `<option value="${si}">${s.name||'Stat '+si}</option>`).join('');
   document.getElementById('badgeList').innerHTML=modalBadges.map((b,i)=>{
     const lbl=(b.sq||b.name||'').slice(0,4).toUpperCase()||'?';
     const st=CAT[document.getElementById('fCategory').value]||CAT.other;
     const sqBg=b.checked?st.bg:'var(--tag-bg)';
     const sqCol=b.checked?st.ac:'var(--text-secondary)';
+    const hasTrigger=b.triggerStat!==undefined&&b.triggerStat!=='';
     return `<div class="badge-list-item">
       <input type="checkbox" ${b.checked?'checked':''} onchange="toggleNB(${i},this.checked)">
       <div class="bli-sq" style="background:${sqBg};color:${sqCol};">${lbl}</div>
       <span class="bli-desc"><input class="bli-name-inp" type="text" value="${b.name||''}" placeholder="Name…" oninput="setNName(${i},this.value)"></span>
       <span class="bli-desc"><input class="bli-desc-inp" type="text" value="${b.desc||''}" placeholder="Description…" oninput="setNDesc(${i},this.value)"></span>
+      <div class="bli-trigger">
+        <select onchange="setNTriggerStat(${i},this.value);renderModalBadges();">${statOpts.replace(`value="${b.triggerStat??''}"`,`value="${b.triggerStat??''}" selected`)}</select>
+        <input type="number" min="1" value="${b.triggerVal??1}" ${hasTrigger?'':'disabled'} style="width:38px;" onchange="setNTriggerVal(${i},this.value)">
+      </div>
       <button class="badge-del" onclick="delNB(${i})">✕</button>
     </div>`;
   }).join('');
@@ -1235,6 +1266,8 @@ function renderModalBadges(){
 function toggleNB(i,v){modalBadges[i].checked=v;renderModalBadges();}
 function setNName(i,v){modalBadges[i].name=v;}
 function setNDesc(i,v){modalBadges[i].desc=v;}
+function setNTriggerStat(i,v){modalBadges[i].triggerStat=v===''?undefined:v;if(v==='')modalBadges[i].triggerVal=undefined;}
+function setNTriggerVal(i,v){modalBadges[i].triggerVal=parseFloat(v)||1;}
 function delNB(i){modalBadges.splice(i,1);renderModalBadges();}
 
 document.getElementById('addNormalBtn').addEventListener('click',()=>{
@@ -1306,6 +1339,10 @@ function renderModalStats(){
   document.getElementById('statList').innerHTML=modalStats.map((s,i)=>`
     <div class="stat-list-item${s.infinite?' is-infinite':''}">
       <input class="sli-name-inp" type="text" value="${s.name||''}" placeholder="Stat name…" oninput="modalStats[${i}].name=this.value">
+      <select style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:2px;color:var(--text-secondary);font-size:11px;padding:2px 4px;outline:none;" onchange="modalStats[${i}].unit=this.value">
+        <option value="unit" ${(s.unit||'unit')==='unit'?'selected':''}>Unit</option>
+        <option value="time" ${s.unit==='time'?'selected':''}>Time</option>
+      </select>
       <input class="sli-num-inp" type="number" value="${s.max??100}" min="1" ${s.infinite?'disabled':''} oninput="modalStats[${i}].max=parseFloat(this.value)||1">
       <label class="inf-label" style="font-size:10px;gap:4px;">
         <input type="checkbox" ${s.infinite?'checked':''} onchange="modalStats[${i}].infinite=this.checked;renderModalStats();" style="accent-color:var(--accent-teal);"> ∞
@@ -1317,11 +1354,14 @@ function delStat(i){modalStats.splice(i,1);renderModalStats();}
 document.getElementById('addStatBtn').addEventListener('click',()=>{
   const name=document.getElementById('stName').value.trim();if(!name)return;
   const infinite=document.getElementById('stInf').checked;
+  const unit=document.getElementById('stUnit').value;
   const max=infinite?null:(parseFloat(document.getElementById('stMax').value)||100);
-  modalStats.push({name, cur:0, max, infinite:!!infinite});
+  modalStats.push({name, cur:0, max, infinite:!!infinite, unit});
   document.getElementById('stName').value='';
   document.getElementById('stMax').value='100';
   document.getElementById('stInf').checked=false;
+  document.getElementById('stUnit').value='unit';
+  document.getElementById('stMax').disabled=false;
   renderModalStats();
 });
 document.getElementById('stInf').addEventListener('change',function(){
@@ -1331,67 +1371,155 @@ document.getElementById('stName').addEventListener('keydown',e=>{if(e.key==='Ent
 
 // ── STATLIST VIEWER ───────────────────────────────────────────────
 let slvCurrentId=null;
+
+// Format minutes → "X.XX hrs"
+function minsToHrsStr(mins){
+  return (mins/60).toFixed(2)+' hrs';
+}
+// Format a time stat value (stored in minutes) for display
+function fmtTimeStat(mins,maxMins){
+  const c=minsToHrsStr(mins);
+  return maxMins!=null ? `${c} / ${minsToHrsStr(maxMins)}` : c;
+}
+
 function openSLV(itemId){
   slvCurrentId=itemId;
   renderSLV();
   document.getElementById('slvOverlay').classList.add('open');
 }
+
 function renderSLV(){
   const it=items.find(x=>x.id===slvCurrentId);if(!it)return;
   const st=CAT[it.category]||CAT.other;
   document.getElementById('slvTitle').textContent=it.title;
   document.getElementById('slvThumb').style.cssText=`background:${st.bg};color:${st.ac};`;
   document.getElementById('slvThumb').textContent=it.title.slice(0,3).toUpperCase();
-  const stats=it.stats||[];
+
+  // Build full stat list: Total Played (builtin) + user stats
+  const userStats=it.stats||[];
+  // Builtin: Total Played stored as hours float, shown as hrs
+  const totalPlayedHrs=it.hours||0;
+  const builtinStat={_builtin:true, name:'Total Played', unit:'time', cur:Math.round(totalPlayedHrs*60), max:null, infinite:true};
+  const allStats=[builtinStat, ...userStats];
+
   const body=document.getElementById('slvBody');
-  if(!stats.length){
-    body.innerHTML=`<div class="slv-empty">No statistics added yet.<br><span style="font-size:12px;opacity:.6;">Edit this item to add stats.</span></div>`;
-    return;
-  }
-  body.innerHTML=stats.map((s,i)=>{
+  body.innerHTML=allStats.map((s,i)=>{
+    const isBuiltin=!!s._builtin;
+    const idx=isBuiltin?-1:i-1; // real index in it.stats
     const cur=s.cur??0;
     const infinite=s.infinite;
+    const isTime=s.unit==='time';
     const max=s.max??100;
+
+    // Display values
+    const curDisp=isTime?minsToHrsStr(cur):(cur+'');
+    const maxDisp=isTime?minsToHrsStr(max):(max+'');
+
+    // +/- buttons and time input
+    const minusBtn=isBuiltin?'':`<button class="stat-adj-btn minus" onclick="adjStat('${slvCurrentId}',${idx},-1)" style="opacity:0;cursor:default;">−</button>`;
+    const plusBtn=(!isBuiltin&&!isTime)?`<button class="stat-adj-btn" onclick="adjStat('${slvCurrentId}',${idx},1)">+</button>`:'';
+    const timeOnclick=isBuiltin?`adjBuiltinTime('${slvCurrentId}',${i})`:`adjStatTime('${slvCurrentId}',${idx},${i})`;
+    const timeInput=isTime?`<div class="stat-time-input"><input type="number" min="1" placeholder="1" id="timeInp_${i}"><button class="stat-adj-btn" onclick="${timeOnclick}">+</button></div>`:'';
+
     if(infinite){
+      const displayVal=isTime?minsToHrsStr(cur):cur;
       return `<div class="stat-row is-infinite">
         <div class="stat-row-top">
-          <span class="stat-name">${s.name||'Unnamed Stat'}</span>
+          <span class="stat-name">${s.name}</span>
           <span class="stat-inf-symbol">∞</span>
         </div>
         <div class="stat-inf-body">
-          <div class="stat-inf-counter">${cur}</div>
-          <div>
-            <div class="stat-inf-label">Total counted</div>
-          </div>
+          <div class="stat-inf-counter" style="font-size:${isTime?'24px':'38px'}">${displayVal}</div>
+          <div><div class="stat-inf-label">Total counted</div></div>
           <div class="stat-inf-actions">
-            <button class="stat-adj-btn minus" onclick="adjStat('${slvCurrentId}',${i},-1)">−</button>
-            <button class="stat-adj-btn" onclick="adjStat('${slvCurrentId}',${i},+1)">+</button>
+            ${minusBtn}${plusBtn}${timeInput}
           </div>
         </div>
       </div>`;
     }
-    const pct=Math.min(100,Math.round(cur/max*100));
+
+    const pct=Math.round(cur/max*100);
+    const barPct=Math.min(100,pct);
     const col=pct>=100?'#4fc08d':pct>=60?'#66c0f4':pct>=30?'#1a9fff':'#2a5a8a';
     return `<div class="stat-row">
       <div class="stat-row-top">
-        <span class="stat-name">${s.name||'Unnamed Stat'}</span>
-        <span class="stat-vals"><b>${cur}</b> / ${max} &nbsp;<span style="color:var(--text-secondary)">(${pct}%)</span></span>
+        <span class="stat-name">${s.name}</span>
       </div>
-      <div class="stat-bar-row">
-        <div class="stat-bar-outer"><div class="stat-bar-inner" style="width:${pct}%;background:${col};"></div></div>
-        <button class="stat-adj-btn minus" onclick="adjStat('${slvCurrentId}',${i},-1)">−</button>
-        <button class="stat-adj-btn" onclick="adjStat('${slvCurrentId}',${i},+1)">+</button>
+      <div class="stat-inf-body">
+        <div class="stat-inf-counter" style="font-size:${isTime?'24px':'38px'};color:${col};text-shadow:0 0 24px ${col}66;">${curDisp}</div>
+        <div>
+          <div class="stat-inf-label">/ ${maxDisp}</div>
+          <div style="font-size:13px;color:${col};font-weight:700;margin-top:3px;">${pct}%</div>
+        </div>
+        <div class="stat-inf-actions" style="flex-direction:column;gap:6px;align-items:flex-end;">
+          <div class="stat-bar-outer" style="width:140px;height:6px;"><div class="stat-bar-inner" style="width:${barPct}%;background:${col};"></div></div>
+          <div style="display:flex;gap:6px;">${minusBtn}${plusBtn}${timeInput}</div>
+        </div>
       </div>
     </div>`;
   }).join('');
 }
-function adjStat(itemId,statIdx,delta){
+
+function adjStat(itemId,statIdx,delta,isMinutes){
   const it=items.find(x=>x.id===itemId);if(!it||!it.stats)return;
   const s=it.stats[statIdx];if(!s)return;
-  s.cur=Math.max(0,(s.cur??0)+delta);
-  // cap at max if not infinite
-  if(!s.infinite&&s.max!=null) s.cur=Math.min(s.cur,s.max);
+  const add=isMinutes?delta:delta; // delta is already minutes if isMinutes
+  s.cur=Math.max(0,(s.cur??0)+add);
+  // no upper cap — allow exceeding goal (e.g. 120%)
+
+  // Auto-unlock badges
+  let anyUnlocked=false;
+  (it.badges||[]).forEach(b=>{
+    if(b.checked)return;
+    if(b.triggerStat===undefined||b.triggerStat==='')return;
+    if(parseInt(b.triggerStat)!==statIdx)return;
+    if(s.cur>=(b.triggerVal??1)){b.checked=true;anyUnlocked=true;}
+  });
   save();renderSLV();
+  if(anyUnlocked)render();
+}
+
+function adjStatTime(itemId,statIdx,rowIdx){
+  const it=items.find(x=>x.id===itemId);if(!it||!it.stats)return;
+  const s=it.stats[statIdx];if(!s)return;
+  const inp=document.getElementById('timeInp_'+rowIdx);
+  const mins=parseFloat(inp?.value)||1;
+  s.cur=Math.max(0,(s.cur??0)+mins);
+  // no upper cap — allow exceeding goal
+  if(inp)inp.value='';
+
+  // Auto-unlock badges
+  let anyUnlocked=false;
+  (it.badges||[]).forEach(b=>{
+    if(b.checked)return;
+    if(b.triggerStat===undefined||b.triggerStat==='')return;
+    if(parseInt(b.triggerStat)!==statIdx)return;
+    if(s.cur>=(b.triggerVal??1)){b.checked=true;anyUnlocked=true;}
+  });
+  save();renderSLV();
+  if(anyUnlocked)render();
+}
+function adjBuiltinTime(itemId,rowIdx){
+  const it=items.find(x=>x.id===itemId);if(!it)return;
+  const inp=document.getElementById('timeInp_'+rowIdx);
+  const mins=parseFloat(inp?.value)||1;
+  if(mins<=0)return;
+  it.hours=Math.round(((it.hours||0)*60+mins))/60;
+  it.hours=Math.round(it.hours*100)/100;
+  it.lastPlayed=today();
+  if(inp)inp.value='';
+
+  // Auto-unlock badges triggered by Total Played (stored in minutes)
+  const totalMins=Math.round(it.hours*60);
+  let anyUnlocked=false;
+  (it.badges||[]).forEach(b=>{
+    if(b.checked)return;
+    if(b.triggerStat!=='__totalPlayed')return;
+    if(totalMins>=(b.triggerVal??1)){b.checked=true;anyUnlocked=true;}
+  });
+
+  save();render();renderSLV();
+  if(anyUnlocked)render();
 }
 document.getElementById('slvClose').addEventListener('click',()=>{document.getElementById('slvOverlay').classList.remove('open');slvCurrentId=null;});
 document.getElementById('slvOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget){document.getElementById('slvOverlay').classList.remove('open');slvCurrentId=null;}});
