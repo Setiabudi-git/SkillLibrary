@@ -150,10 +150,111 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .badge-overflow:hover{background:var(--accent-teal);color:#fff;border-color:var(--accent-teal);}
 .badge-empty{width:44px;height:44px;flex-shrink:0;border-radius:3px;border:1px dashed #253a52;opacity:.25;}
 
-/* Card actions */
-.card-actions{flex-shrink:0;padding:10px 20px 10px 4px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;}
+/* Card actions — just the dots button top-right */
+.card-actions{flex-shrink:0;padding:10px 16px 10px 4px;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;}
 .dots-btn{background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:20px;line-height:1;padding:2px 4px;border-radius:3px;}
 .dots-btn:hover{color:var(--accent-blue);}
+
+/* Card buttons — accent left-border style matching the dark vibe */
+.card-btns{display:flex;gap:6px;margin-top:auto;padding-top:12px;border-top:1px solid var(--border);}
+.card-steam-btn{
+  background:var(--bg-secondary);border:1px solid var(--border);
+  border-left-width:3px;
+  color:var(--text-secondary);font-size:12px;font-weight:700;
+  padding:7px 16px;border-radius:3px;cursor:pointer;white-space:nowrap;
+  display:flex;align-items:center;gap:7px;
+  transition:all .18s;
+  font-family:'Rajdhani',sans-serif;letter-spacing:.6px;text-transform:uppercase;
+}
+.card-steam-btn.btn-stat{border-left-color:#4fc08d;}
+.card-steam-btn.btn-ach{border-left-color:var(--accent-blue);}
+.card-steam-btn:hover{background:var(--bg-card-hover);color:var(--text-bright);}
+.card-steam-btn.btn-stat:hover{border-color:#4fc08d44;border-left-color:#4fc08d;color:#4fc08d;}
+.card-steam-btn.btn-ach:hover{border-color:var(--accent-blue)44;border-left-color:var(--accent-blue);color:var(--accent-blue);}
+.card-steam-btn .csb-icon{font-size:13px;}
+
+/* ── STATLIST VIEWER OVERLAY ── */
+.slv-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:800;
+  display:none;align-items:flex-start;justify-content:center;
+  overflow-y:auto;padding:40px 20px;backdrop-filter:blur(3px);
+}
+.slv-overlay.open{display:flex;}
+.slv{background:#1b2c3e;border:1px solid var(--border);border-radius:6px;width:100%;max-width:700px;animation:popIn .18s ease;}
+.slv-header{display:flex;align-items:center;gap:14px;padding:18px 22px;background:#162333;border-bottom:1px solid var(--border);border-radius:6px 6px 0 0;}
+.slv-thumb{width:80px;height:44px;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;}
+.slv-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;color:#fff;flex:1;}
+.slv-close{background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;}
+.slv-close:hover{color:#fff;}
+.slv-body{padding:22px;display:flex;flex-direction:column;gap:10px;}
+.slv-empty{text-align:center;padding:40px;color:var(--text-secondary);font-size:14px;}
+
+/* Normal stat row — bar + +/- inline */
+.stat-row{background:#162333;border:1px solid var(--border);border-left:3px solid #4fc08d;border-radius:5px;padding:13px 16px;display:flex;flex-direction:column;gap:8px;}
+.stat-row-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.stat-name{font-size:16px;font-weight:700;color:var(--text-bright);font-family:'Rajdhani',sans-serif;}
+.stat-vals{font-size:13px;color:var(--text-secondary);white-space:nowrap;flex-shrink:0;}
+.stat-vals b{color:#4fc08d;font-weight:700;}
+/* bar row: bar flex-grows, +/- sit right beside it */
+.stat-bar-row{display:flex;align-items:center;gap:8px;}
+.stat-bar-outer{flex:1;min-width:0;height:8px;background:var(--progress-bg);border-radius:2px;overflow:hidden;}
+.stat-bar-inner{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.stat-adj-btn{
+  width:28px;height:28px;border-radius:3px;border:1px solid var(--border);
+  background:var(--bg-secondary);color:var(--text-secondary);flex-shrink:0;
+  font-size:16px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;line-height:1;
+  transition:all .12s;
+}
+.stat-adj-btn:hover{border-color:#4fc08d;color:#4fc08d;background:rgba(79,192,141,.12);}
+.stat-adj-btn.minus:hover{border-color:#e05c5c;color:#e05c5c;background:rgba(224,92,92,.1);}
+
+/* Infinite stat row — big glowing counter treatment */
+.stat-row.is-infinite{
+  background:linear-gradient(135deg,#0e2218 0%,#162333 100%);
+  border-color:#4fc08d22;border-left-color:#4fc08d;
+  box-shadow:inset 0 0 60px rgba(79,192,141,.04);
+}
+.stat-inf-body{display:flex;align-items:center;gap:16px;}
+.stat-inf-counter{
+  font-family:'Rajdhani',sans-serif;font-size:38px;font-weight:700;
+  color:#4fc08d;line-height:1;min-width:52px;text-align:center;
+  text-shadow:0 0 24px rgba(79,192,141,.45);
+}
+.stat-inf-label{font-size:11px;color:#4fc08d66;text-transform:uppercase;letter-spacing:.9px;line-height:1.5;}
+.stat-inf-unit{font-size:14px;color:#4fc08daa;margin-top:2px;}
+.stat-inf-actions{margin-left:auto;display:flex;gap:6px;align-items:center;}
+.stat-inf-symbol{font-size:22px;color:#4fc08d22;font-family:'Rajdhani',sans-serif;letter-spacing:-2px;margin-right:4px;}
+
+/* Stat modal form */
+.stat-add-form{display:grid;grid-template-columns:1fr 90px 1fr auto;gap:6px;margin-bottom:8px;align-items:end;}
+.stat-add-form input{background:var(--bg-base);border:1px solid var(--border);border-radius:3px;padding:5px 8px;color:var(--text-primary);font-size:12px;font-family:'Inter',sans-serif;outline:none;}
+.stat-add-form input:focus{border-color:var(--accent-blue);}
+.stat-add-form input.num-input{text-align:center;}
+.stat-add-form button{background:var(--bg-card-hover);border:1px solid var(--border);color:var(--accent-blue);padding:5px 11px;border-radius:3px;cursor:pointer;font-size:12px;white-space:nowrap;}
+.stat-add-form button:hover{background:var(--accent-teal);color:#fff;}
+.stat-form-labels{display:grid;grid-template-columns:1fr 90px 1fr auto;gap:6px;margin-bottom:3px;}
+.stat-form-labels span{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);}
+.inf-label{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
+.inf-label input[type=checkbox]{accent-color:var(--accent-teal);cursor:pointer;}
+
+/* Stat list rows in modal */
+.stat-list{display:flex;flex-direction:column;gap:3px;max-height:200px;overflow-y:auto;}
+.stat-list-item{display:grid;grid-template-columns:1fr 90px auto 20px;align-items:center;gap:7px;padding:6px 10px;background:var(--bg-base);border:1px solid var(--border);border-radius:3px;}
+.stat-list-item.is-infinite{border-color:#4fc08d44;background:#0e221844;}
+.sli-name-inp{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text-primary);font-size:12px;font-weight:600;font-family:'Inter',sans-serif;width:100%;padding:1px 2px;outline:none;}
+.sli-name-inp:focus{border-bottom-color:var(--accent-blue);}
+.sli-num-inp{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--accent-blue);font-size:12px;font-family:'Inter',sans-serif;width:100%;padding:1px 4px;outline:none;text-align:center;}
+.sli-num-inp:focus{border-bottom-color:var(--accent-blue);}
+.sli-num-inp:disabled{color:var(--text-secondary);opacity:.4;}
+
+@media(max-width:700px){
+  .stat-add-form{grid-template-columns:1fr 70px auto;}
+  .stat-form-labels{grid-template-columns:1fr 70px auto;}
+  .stat-list-item{grid-template-columns:1fr 70px auto 20px;}
+  .card-btns{gap:6px;}
+  .card-steam-btn{font-size:11px;padding:6px 10px;}
+}
 
 /* Star button in BDP */
 .bdp-star-btn{
@@ -442,6 +543,18 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
   </div>
 </div>
 
+<!-- STATLIST VIEWER OVERLAY -->
+<div class="slv-overlay" id="slvOverlay">
+  <div class="slv">
+    <div class="slv-header">
+      <div class="slv-thumb" id="slvThumb"></div>
+      <div class="slv-title" id="slvTitle"></div>
+      <button class="slv-close" id="slvClose">✕</button>
+    </div>
+    <div class="slv-body" id="slvBody"></div>
+  </div>
+</div>
+
 <!-- EDIT MODAL -->
 <div class="overlay" id="overlay">
   <div class="modal">
@@ -508,6 +621,19 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
     </div>
     <div class="badge-list" id="secretList"></div>
 
+    <!-- Statistics -->
+    <div class="modal-section" style="color:#4fc08d;border-bottom-color:#4fc08d44;">📊 Statistics — track countable progress per item</div>
+    <div class="stat-form-labels">
+      <span>Stat Name</span><span>Max / Goal</span><label class="inf-label"><input type="checkbox" id="stInf"> Infinite</label><span></span>
+    </div>
+    <div class="stat-add-form">
+      <input type="text" id="stName" placeholder="e.g. Vocabulary Words…">
+      <input type="number" class="num-input" id="stMax" value="100" min="1" placeholder="100">
+      <span></span>
+      <button id="addStatBtn" style="border-color:#4fc08d44;color:#4fc08d;">+ Add</button>
+    </div>
+    <div class="stat-list" id="statList"></div>
+
     <div class="modal-footer">
       <button class="btn-cancel" id="closeModal">Cancel</button>
       <button class="btn-save" id="saveItem">Save Item</button>
@@ -544,7 +670,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 <script>
 const SK='skill_library_v5';
 let items=[],editingId=null,ctxId=null,filter='all',sort='default',banner=null;
-let modalBadges=[],modalSecrets=[];
+let modalBadges=[],modalSecrets=[],modalStats=[];
 
 const CAT={
   course: {bg:'linear-gradient(135deg,#1a3a5c,#0f2a45)',ac:'#66c0f4',lb:'COURSE'},
@@ -854,7 +980,7 @@ function cardHTML(it){
       <div class="card-meta">
         <div class="meta-item"><span class="meta-lbl">Total Played</span><span class="meta-val">${fmtH(it.hours)}</span></div>
         <div class="meta-item"><span class="meta-lbl">Last Played</span><span class="meta-val">${it.lastPlayed||'—'}</span></div>
-      <div class="ach-block">
+        <div class="ach-block">
           <div class="ach-top-row">
             <span class="meta-lbl">Achievements</span>
             <span class="ach-count">${pct===100?'✓ ':''}${checkedN}/${badges.length}</span>
@@ -865,8 +991,14 @@ function cardHTML(it){
           </div>
         </div>
       </div>
+      <div class="card-btns">
+        <button class="card-steam-btn btn-stat" onclick="openSLV('${it.id}')">Statistic</button>
+        <button class="card-steam-btn btn-ach" onclick="openBDP('${it.id}')">Achievement</button>
+      </div>
     </div>
-    <div class="card-actions"><button class="dots-btn" onclick="openCtx(event,'${it.id}')">⋯</button></div>
+    <div class="card-actions">
+      <button class="dots-btn" onclick="openCtx(event,'${it.id}')">⋯</button>
+    </div>
   </div>`;
 }
 
@@ -1045,8 +1177,10 @@ function openModal(item=null){
   updateHrsPreview();
   modalBadges=(item?.badges||[]).map(b=>({...b})).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
   modalSecrets=(item?.secrets||[]).map(b=>({...b})).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
+  modalStats=(item?.stats||[]).map(s=>({...s}));
   renderModalBadges();
   renderModalSecrets();
+  renderModalStats();
   document.getElementById('overlay').classList.add('open');
   document.getElementById('fTitle').focus();
 }
@@ -1160,11 +1294,107 @@ document.getElementById('saveItem').addEventListener('click',()=>{
     hours:minsToH(h,m),lastPlayed:today(),
     badges:modalBadges.map(b=>({...b})),
     secrets:modalSecrets.map(b=>({...b})),
+    stats:modalStats.map(s=>({...s})),
   };
   if(editingId){const i=items.findIndex(x=>x.id===editingId);if(i>-1)items[i]=item;}
   else items.unshift(item);
   save();render();closeModal();
 });
+
+// ── STATS MODAL ──────────────────────────────────────────────────
+function renderModalStats(){
+  document.getElementById('statList').innerHTML=modalStats.map((s,i)=>`
+    <div class="stat-list-item${s.infinite?' is-infinite':''}">
+      <input class="sli-name-inp" type="text" value="${s.name||''}" placeholder="Stat name…" oninput="modalStats[${i}].name=this.value">
+      <input class="sli-num-inp" type="number" value="${s.max??100}" min="1" ${s.infinite?'disabled':''} oninput="modalStats[${i}].max=parseFloat(this.value)||1">
+      <label class="inf-label" style="font-size:10px;gap:4px;">
+        <input type="checkbox" ${s.infinite?'checked':''} onchange="modalStats[${i}].infinite=this.checked;renderModalStats();" style="accent-color:var(--accent-teal);"> ∞
+      </label>
+      <button class="badge-del" onclick="delStat(${i})">✕</button>
+    </div>`).join('');
+}
+function delStat(i){modalStats.splice(i,1);renderModalStats();}
+document.getElementById('addStatBtn').addEventListener('click',()=>{
+  const name=document.getElementById('stName').value.trim();if(!name)return;
+  const infinite=document.getElementById('stInf').checked;
+  const max=infinite?null:(parseFloat(document.getElementById('stMax').value)||100);
+  modalStats.push({name, cur:0, max, infinite:!!infinite});
+  document.getElementById('stName').value='';
+  document.getElementById('stMax').value='100';
+  document.getElementById('stInf').checked=false;
+  renderModalStats();
+});
+document.getElementById('stInf').addEventListener('change',function(){
+  document.getElementById('stMax').disabled=this.checked;
+});
+document.getElementById('stName').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('addStatBtn').click();});
+
+// ── STATLIST VIEWER ───────────────────────────────────────────────
+let slvCurrentId=null;
+function openSLV(itemId){
+  slvCurrentId=itemId;
+  renderSLV();
+  document.getElementById('slvOverlay').classList.add('open');
+}
+function renderSLV(){
+  const it=items.find(x=>x.id===slvCurrentId);if(!it)return;
+  const st=CAT[it.category]||CAT.other;
+  document.getElementById('slvTitle').textContent=it.title;
+  document.getElementById('slvThumb').style.cssText=`background:${st.bg};color:${st.ac};`;
+  document.getElementById('slvThumb').textContent=it.title.slice(0,3).toUpperCase();
+  const stats=it.stats||[];
+  const body=document.getElementById('slvBody');
+  if(!stats.length){
+    body.innerHTML=`<div class="slv-empty">No statistics added yet.<br><span style="font-size:12px;opacity:.6;">Edit this item to add stats.</span></div>`;
+    return;
+  }
+  body.innerHTML=stats.map((s,i)=>{
+    const cur=s.cur??0;
+    const infinite=s.infinite;
+    const max=s.max??100;
+    if(infinite){
+      return `<div class="stat-row is-infinite">
+        <div class="stat-row-top">
+          <span class="stat-name">${s.name||'Unnamed Stat'}</span>
+          <span class="stat-inf-symbol">∞</span>
+        </div>
+        <div class="stat-inf-body">
+          <div class="stat-inf-counter">${cur}</div>
+          <div>
+            <div class="stat-inf-label">Total counted</div>
+          </div>
+          <div class="stat-inf-actions">
+            <button class="stat-adj-btn minus" onclick="adjStat('${slvCurrentId}',${i},-1)">−</button>
+            <button class="stat-adj-btn" onclick="adjStat('${slvCurrentId}',${i},+1)">+</button>
+          </div>
+        </div>
+      </div>`;
+    }
+    const pct=Math.min(100,Math.round(cur/max*100));
+    const col=pct>=100?'#4fc08d':pct>=60?'#66c0f4':pct>=30?'#1a9fff':'#2a5a8a';
+    return `<div class="stat-row">
+      <div class="stat-row-top">
+        <span class="stat-name">${s.name||'Unnamed Stat'}</span>
+        <span class="stat-vals"><b>${cur}</b> / ${max} &nbsp;<span style="color:var(--text-secondary)">(${pct}%)</span></span>
+      </div>
+      <div class="stat-bar-row">
+        <div class="stat-bar-outer"><div class="stat-bar-inner" style="width:${pct}%;background:${col};"></div></div>
+        <button class="stat-adj-btn minus" onclick="adjStat('${slvCurrentId}',${i},-1)">−</button>
+        <button class="stat-adj-btn" onclick="adjStat('${slvCurrentId}',${i},+1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function adjStat(itemId,statIdx,delta){
+  const it=items.find(x=>x.id===itemId);if(!it||!it.stats)return;
+  const s=it.stats[statIdx];if(!s)return;
+  s.cur=Math.max(0,(s.cur??0)+delta);
+  // cap at max if not infinite
+  if(!s.infinite&&s.max!=null) s.cur=Math.min(s.cur,s.max);
+  save();renderSLV();
+}
+document.getElementById('slvClose').addEventListener('click',()=>{document.getElementById('slvOverlay').classList.remove('open');slvCurrentId=null;});
+document.getElementById('slvOverlay').addEventListener('click',e=>{if(e.target===e.currentTarget){document.getElementById('slvOverlay').classList.remove('open');slvCurrentId=null;}});
 
 document.getElementById('openAddModal').addEventListener('click',()=>openModal());
 document.getElementById('closeModal').addEventListener('click',closeModal);
@@ -1260,7 +1490,7 @@ document.querySelectorAll('.sort-btn').forEach(b=>{
     b.classList.add('active');sort=b.dataset.sort;render();
   });
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTokenModal();document.getElementById('bdpOverlay').classList.remove('open');bdpCurrentId=null;}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeTokenModal();document.getElementById('bdpOverlay').classList.remove('open');bdpCurrentId=null;document.getElementById('slvOverlay').classList.remove('open');slvCurrentId=null;}});
 
 load();render();
 </script>
