@@ -197,8 +197,8 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .stat-vals b{color:#4fc08d;font-weight:700;}
 /* bar row: bar flex-grows, +/- sit right beside it */
 .stat-bar-row{display:flex;align-items:center;gap:8px;}
-.stat-bar-outer{flex:1;min-width:0;height:8px;background:var(--progress-bg);border-radius:2px;overflow:hidden;}
-.stat-bar-inner{height:100%;border-radius:2px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+.stat-bar-outer{height:15px;background:#070f17;border-radius:4px;overflow:hidden;border:1px solid #3a5a7a55;}
+.stat-bar-inner{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1);}
 .stat-adj-btn{
   width:28px;height:28px;border-radius:3px;border:1px solid var(--border);
   background:var(--bg-secondary);color:var(--text-secondary);flex-shrink:0;
@@ -1473,7 +1473,7 @@ function renderSLV(){
           <div class="stat-inf-label">/ ${maxDisp}</div>
           <div style="font-size:13px;color:${col};font-weight:700;margin-top:3px;">${pct}%</div>
         </div>
-        <div class="stat-bar-outer" style="height:6px;"><div class="stat-bar-inner" style="width:${barPct}%;background:${col};"></div></div>
+        <div class="stat-bar-outer"><div class="stat-bar-inner" style="width:${barPct}%;background:${col};"></div></div>
         <div style="display:flex;gap:6px;justify-content:flex-end;">${minusBtn}${plusBtn}${timeInput}</div>
       </div>
     </div>`;
