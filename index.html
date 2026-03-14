@@ -227,13 +227,13 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .stat-inf-symbol{font-size:22px;color:#4fc08d22;font-family:'Rajdhani',sans-serif;letter-spacing:-2px;margin-right:4px;}
 
 /* Stat modal form */
-.stat-add-form{display:grid;grid-template-columns:1fr 90px 1fr auto;gap:6px;margin-bottom:8px;align-items:end;}
+.stat-add-form{display:grid;grid-template-columns:1fr 80px 90px auto;gap:6px;margin-bottom:8px;align-items:end;}
 .stat-add-form input{background:var(--bg-base);border:1px solid var(--border);border-radius:3px;padding:5px 8px;color:var(--text-primary);font-size:12px;font-family:'Inter',sans-serif;outline:none;}
 .stat-add-form input:focus{border-color:var(--accent-blue);}
 .stat-add-form input.num-input{text-align:center;}
 .stat-add-form button{background:var(--bg-card-hover);border:1px solid var(--border);color:var(--accent-blue);padding:5px 11px;border-radius:3px;cursor:pointer;font-size:12px;white-space:nowrap;}
 .stat-add-form button:hover{background:var(--accent-teal);color:#fff;}
-.stat-form-labels{display:grid;grid-template-columns:1fr 90px 1fr auto;gap:6px;margin-bottom:3px;}
+.stat-form-labels{display:grid;grid-template-columns:1fr 80px 90px auto;gap:6px;margin-bottom:3px;}
 .stat-form-labels span{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-secondary);}
 .inf-label{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
 .inf-label input[type=checkbox]{accent-color:var(--accent-teal);cursor:pointer;}
@@ -249,14 +249,17 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .sli-num-inp:disabled{color:var(--text-secondary);opacity:.4;}
 
 @media(max-width:700px){
-  .stat-add-form{grid-template-columns:1fr 70px auto;}
-  .stat-form-labels{grid-template-columns:1fr 70px auto;}
-  .stat-list-item{grid-template-columns:1fr 70px auto 20px;}
+  /* Stat add form: row1 = name+unit, row2 = max+add */
+  .stat-add-form{grid-template-columns:1fr 72px;grid-template-rows:auto auto;}
+  .stat-form-labels{grid-template-columns:1fr 72px;}
+  /* stat-list-item: name | unit | max | inf | del */
+  .stat-list-item{grid-template-columns:1fr 56px 52px auto 20px;gap:4px;}
+  /* Badge list: name+desc top, trigger bottom */
+  .badge-list-item{display:grid;grid-template-columns:13px 30px 1fr 1fr 20px;grid-template-rows:auto auto;row-gap:5px;}
+  .bli-trigger{grid-column:2/-1;}
   .card-btns{gap:6px;}
   .card-steam-btn{font-size:11px;padding:6px 10px;}
 }
-
-/* Time input beside + button in stat viewer */
 .stat-time-input{
   display:flex;align-items:center;gap:4px;flex-shrink:0;
 }
@@ -310,10 +313,6 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
   .hrs-row{flex-wrap:wrap;gap:5px;}
   .hrs-add-btn{font-size:11px;padding:5px 8px;}
   #customMins{width:40px !important;}
-
-  /* Stat add form — stack name+unit on one row, max+button on next */
-  .stat-add-form{grid-template-columns:1fr 68px 70px auto !important;gap:4px;}
-  .stat-form-labels{grid-template-columns:1fr 68px 70px auto !important;gap:4px;}
 }
 
 /* ── BADGE TOOLTIP ── */
@@ -658,7 +657,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
     <div class="stat-form-labels">
       <span>Stat Name</span><span>Unit</span><span>Max / Goal</span><label class="inf-label"><input type="checkbox" id="stInf"> Infinite</label><span></span>
     </div>
-    <div class="stat-add-form" style="grid-template-columns:1fr 80px 90px 1fr auto;">
+    <div class="stat-add-form">
       <input type="text" id="stName" placeholder="e.g. Vocabulary Words…">
       <select id="stUnit" style="background:var(--bg-base);border:1px solid var(--border);border-radius:3px;padding:5px 6px;color:var(--text-primary);font-size:12px;font-family:'Inter',sans-serif;outline:none;">
         <option value="unit">Unit</option>
@@ -1266,7 +1265,7 @@ function renderModalBadges(){
     return `<div class="badge-list-item">
       <input type="checkbox" ${b.checked?'checked':''} onchange="toggleNB(${i},this.checked)">
       <div class="bli-sq" style="background:${sqBg};color:${sqCol};">${lbl}</div>
-      <span class="bli-desc"><input class="bli-name-inp" type="text" value="${b.name||''}" placeholder="Name…" oninput="setNName(${i},this.value)"></span>
+      <span class="bli-name-cell"><input class="bli-name-inp" type="text" value="${b.name||''}" placeholder="Name…" oninput="setNName(${i},this.value)"></span>
       <span class="bli-desc"><input class="bli-desc-inp" type="text" value="${b.desc||''}" placeholder="Description…" oninput="setNDesc(${i},this.value)"></span>
       <div class="bli-trigger">
         <select onchange="setNTriggerStat(${i},this.value);renderModalBadges();">${statOpts.replace(`value="${b.triggerStat??''}"`,`value="${b.triggerStat??''}" selected`)}</select>
@@ -1303,7 +1302,7 @@ function renderModalSecrets(){
     return `<div class="badge-list-item secret">
       <div style="width:13px"></div>
       <div class="bli-sq gold-sq">${lbl}</div>
-      <span class="bli-desc"><input class="bli-name-inp" type="text" value="${b.name||''}" placeholder="Name…" oninput="setSName(${i},this.value)"></span>
+      <span class="bli-name-cell"><input class="bli-name-inp" type="text" value="${b.name||''}" placeholder="Name…" oninput="setSName(${i},this.value)"></span>
       <span class="bli-desc"><input class="bli-desc-inp" type="text" value="${b.desc||''}" placeholder="Description…" oninput="setSDesc(${i},this.value)"></span>
       <button class="badge-del" onclick="delSB(${i})">✕</button>
     </div>`;
