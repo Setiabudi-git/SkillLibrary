@@ -582,6 +582,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
       <div class="slv-title" id="slvTitle"></div>
       <button class="slv-close" id="slvClose">✕</button>
     </div>
+    <div id="slvDescWrap" style="display:none;padding:0 22px;padding-top:16px;"><div class="bdp-desc" id="slvDesc"></div></div>
     <div class="slv-body" id="slvBody"></div>
   </div>
 </div>
@@ -1412,6 +1413,10 @@ function renderSLV(){
   document.getElementById('slvTitle').textContent=it.title;
   document.getElementById('slvThumb').style.cssText=`background:${st.bg};color:${st.ac};`;
   document.getElementById('slvThumb').textContent=it.title.slice(0,3).toUpperCase();
+  const slvDescWrap=document.getElementById('slvDescWrap');
+  const slvDescEl=document.getElementById('slvDesc');
+  if(it.desc&&it.desc.trim()){slvDescEl.textContent=it.desc;slvDescWrap.style.display='block';}
+  else{slvDescWrap.style.display='none';}
 
   // Build full stat list: Total Played (builtin) + user stats
   const userStats=it.stats||[];
