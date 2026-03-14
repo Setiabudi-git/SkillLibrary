@@ -1439,9 +1439,10 @@ function renderSLV(){
     const maxDisp=isTime?minsToHrsStr(max):(max+'');
 
     // +/- buttons and time input
-    const minusBtn=isBuiltin?'':`<button class="stat-adj-btn minus" onclick="adjStat('${slvCurrentId}',${idx},-1)" style="opacity:0;cursor:default;">−</button>`;
-    const plusBtn=(!isBuiltin&&!isTime)?`<button class="stat-adj-btn" onclick="adjStat('${slvCurrentId}',${idx},1)">+</button>`:'';
     const timeOnclick=isBuiltin?`adjBuiltinTime('${slvCurrentId}',${i})`:`adjStatTime('${slvCurrentId}',${idx},${i})`;
+    const timeMinusOnclick=isBuiltin?`adjBuiltinTime('${slvCurrentId}',${i},true)`:`adjStatTime('${slvCurrentId}',${idx},${i},true)`;
+    const minusBtn=isBuiltin?'':`<button class="stat-adj-btn minus" onclick="${isTime?timeMinusOnclick:`adjStat('${slvCurrentId}',${idx},-1)`}" style="opacity:0;cursor:default;">−</button>`;
+    const plusBtn=(!isBuiltin&&!isTime)?`<button class="stat-adj-btn" onclick="adjStat('${slvCurrentId}',${idx},1)">+</button>`:'';
     const timeInput=isTime?`<div class="stat-time-input"><input type="number" min="1" placeholder="1" id="timeInp_${i}"><button class="stat-adj-btn" onclick="${timeOnclick}">+</button></div>`:'';
 
     if(infinite){
@@ -1499,12 +1500,12 @@ function adjStat(itemId,statIdx,delta,isMinutes){
   if(anyUnlocked)render();
 }
 
-function adjStatTime(itemId,statIdx,rowIdx){
+function adjStatTime(itemId,statIdx,rowIdx,subtract=false){
   const it=items.find(x=>x.id===itemId);if(!it||!it.stats)return;
   const s=it.stats[statIdx];if(!s)return;
   const inp=document.getElementById('timeInp_'+rowIdx);
   const mins=parseFloat(inp?.value)||1;
-  s.cur=Math.max(0,(s.cur??0)+mins);
+  s.cur=Math.max(0,(s.cur??0)+(subtract?-mins:mins));
   if(inp)inp.value='';
 
   // Sync to Total Played if enabled
@@ -1525,14 +1526,14 @@ function adjStatTime(itemId,statIdx,rowIdx){
   save();renderSLV();
   if(anyUnlocked)render();
 }
-function adjBuiltinTime(itemId,rowIdx){
+function adjBuiltinTime(itemId,rowIdx,subtract=false){
   const it=items.find(x=>x.id===itemId);if(!it)return;
   const inp=document.getElementById('timeInp_'+rowIdx);
   const mins=parseFloat(inp?.value)||1;
   if(mins<=0)return;
-  it.hours=Math.round(((it.hours||0)*60+mins))/60;
-  it.hours=Math.round(it.hours*100)/100;
-  it.lastPlayed=today();
+  it.hours=Math.round(((it.hours||0)*60+(subtract?-mins:mins)))/60;
+  it.hours=Math.max(0,Math.round(it.hours*100)/100);
+  if(!subtract)it.lastPlayed=today();
   if(inp)inp.value='';
 
   // Auto-unlock badges triggered by Total Played (stored in minutes)
