@@ -215,7 +215,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
   border-color:#4fc08d22;border-left-color:#4fc08d;
   box-shadow:inset 0 0 60px rgba(79,192,141,.04);
 }
-.stat-inf-body{display:flex;align-items:center;gap:16px;}
+.stat-inf-body{display:grid;grid-template-columns:140px auto 1fr 120px;align-items:center;gap:12px;}
 .stat-inf-counter{
   font-family:'Rajdhani',sans-serif;font-size:38px;font-weight:700;
   color:#4fc08d;line-height:1;min-width:52px;text-align:center;
@@ -1453,10 +1453,9 @@ function renderSLV(){
         </div>
         <div class="stat-inf-body">
           <div class="stat-inf-counter" style="font-size:${isTime?'24px':'38px'}">${displayVal}</div>
-          <div><div class="stat-inf-label">Total counted</div></div>
-          <div class="stat-inf-actions">
-            ${minusBtn}${plusBtn}${timeInput}
-          </div>
+          <div></div>
+          <div></div>
+          <div style="display:flex;gap:6px;justify-content:flex-end;">${minusBtn}${plusBtn}${timeInput}</div>
         </div>
       </div>`;
     }
@@ -1474,10 +1473,8 @@ function renderSLV(){
           <div class="stat-inf-label">/ ${maxDisp}</div>
           <div style="font-size:13px;color:${col};font-weight:700;margin-top:3px;">${pct}%</div>
         </div>
-        <div class="stat-inf-actions" style="flex-direction:column;gap:6px;align-items:flex-end;">
-          <div class="stat-bar-outer" style="width:140px;height:6px;"><div class="stat-bar-inner" style="width:${barPct}%;background:${col};"></div></div>
-          <div style="display:flex;gap:6px;">${minusBtn}${plusBtn}${timeInput}</div>
-        </div>
+        <div class="stat-bar-outer" style="height:6px;"><div class="stat-bar-inner" style="width:${barPct}%;background:${col};"></div></div>
+        <div style="display:flex;gap:6px;justify-content:flex-end;">${minusBtn}${plusBtn}${timeInput}</div>
       </div>
     </div>`;
   }).join('');
