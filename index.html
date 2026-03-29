@@ -564,6 +564,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .lv-right-ach-header b{color:var(--text-bright);}
 
 /* Badge section labels */
+#lvTimeInp::-webkit-outer-spin-button,#lvTimeInp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 .lv-badge-section-label{font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--text-secondary);margin:8px 0 5px;font-weight:600;}
 .view-toggle{display:flex;gap:2px;background:var(--bg-base);border:1px solid var(--border);border-radius:3px;padding:2px;}
 .view-btn{background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:5px 9px;border-radius:2px;font-size:13px;line-height:1;transition:all .15s;}
@@ -677,7 +678,7 @@ body{background:var(--bg-base);color:var(--text-primary);font-family:'Inter',san
 .lv-ach-text b{color:var(--text-primary);}
 
 /* Badge grid in library view */
-.lv-badge-grid{display:grid;grid-template-columns:repeat(5,44px);column-gap:6px;row-gap:15px;}
+.lv-badge-grid{display:grid;grid-template-columns:repeat(5,44px);column-gap:3px;row-gap:6px;}
 .lv-badge-item{
   position:relative;width:36px;height:36px;cursor:pointer;flex-shrink:0;
 }
@@ -1998,15 +1999,21 @@ function renderLvDetail(id){
     ? `<img src="${it.thumbImg}" alt="">`
     : `<div class="lv-hero-bg" style="background:${st.bg};color:${st.ac};">${it.title.slice(0,3).toUpperCase()}</div>`;
 
-  // Info bar — fix 5: colorless icons (SVG/text, no emoji)
+  // Info bar — colorless icons, with time controls on Play Time
   const infoBar = `<div class="lv-info-bar">
     <div class="lv-info-item">
       <div class="lv-info-icon-plain">&#9203;</div>
       <div><div class="lv-info-label">Last Played</div><div class="lv-info-value">${it.lastPlayed||'—'}</div></div>
     </div>
-    <div class="lv-info-item">
+    <div class="lv-info-item" style="gap:12px;">
       <div class="lv-info-icon-plain">&#9201;</div>
       <div><div class="lv-info-label">Play Time</div><div class="lv-info-value">${fmtH(it.hours)}</div></div>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <button class="stat-adj-btn minus" onclick="lvAdjTime('${it.id}',-1)" style="opacity:0;cursor:default;">−</button>
+        <input type="number" id="lvTimeInp" value="23" min="1" style="width:40px;height:28px;border-radius:3px;border:1px solid var(--border);background:var(--bg-secondary);color:var(--accent-blue);font-size:12px;text-align:center;outline:none;padding:0;-moz-appearance:textfield;appearance:textfield;">
+        <span style="font-size:10px;color:var(--text-secondary);">min</span>
+        <button class="stat-adj-btn" onclick="lvAdjTime('${it.id}',1)">+</button>
+      </div>
     </div>
     ${badges.length?`<div class="lv-info-item">
       <div class="lv-info-icon-plain" style="font-size:14px;font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--text-secondary);">ACH</div>
@@ -2026,13 +2033,36 @@ function renderLvDetail(id){
   // Stats
   const totalPlayedMins = Math.round((it.hours||0)*60);
   const allStats = [{name:'Total Played',unit:'time',cur:totalPlayedMins,infinite:true,_builtin:true},...(it.stats||[])];
-  const statsHTML = allStats.map(s => {
-    const isTime=s.unit==='time', cur=s.cur??0;
+  const statsHTML = allStats.map((s,si) => {
+    const isTime=s.unit==='time', cur=s.cur??0, isBuiltin=!!s._builtin;
     const valStr=isTime?minsToHrsStr(cur):cur+'';
-    if(s.infinite) return `<div class="lv-stat-item is-infinite"><span class="lv-stat-name">${s.name}</span><span class="lv-stat-val">${valStr}</span><span style="flex:1;"></span><span style="font-size:11px;color:#4fc08d44;">&#8734;</span></div>`;
+    const idx=isBuiltin?-1:si-1; // real index in it.stats
+    const inpId=`lvStatInp_${it.id}_${si}`;
+
+    // buttons
+    const minusBtn=isBuiltin?'':`<button class="stat-adj-btn minus" onclick="lvAdjStat('${it.id}',${idx},-1)" style="opacity:0;cursor:default;">−</button>`;
+    const plusBtn=!isTime?`<button class="stat-adj-btn" onclick="lvAdjStat('${it.id}',${idx},1)">+</button>`:'';
+    const timeOnclick=isBuiltin?`lvAdjBuiltin('${it.id}','${inpId}')`:`lvAdjStatTime('${it.id}',${idx},'${inpId}')`;
+    const timeInput=isTime?`<div class="stat-time-input"><input type="number" min="1" value="23" id="${inpId}" style="-moz-appearance:textfield;appearance:textfield;"><button class="stat-adj-btn" onclick="${timeOnclick}">+</button></div>`:'';
+
+    if(s.infinite){
+      return `<div class="lv-stat-item is-infinite">
+        <span class="lv-stat-name">${s.name}</span>
+        <span class="lv-stat-val">${valStr}</span>
+        <span style="flex:1;"></span>
+        <div style="display:flex;gap:4px;align-items:center;">${minusBtn}${plusBtn}${timeInput}</div>
+        <span style="font-size:11px;color:#4fc08d44;margin-left:6px;">&#8734;</span>
+      </div>`;
+    }
     const max=s.max??100, spct=Math.round(cur/max*100);
     const col=spct>=100?'#4fc08d':spct>=60?'#66c0f4':spct>=30?'#1a9fff':'#2a5a8a';
-    return `<div class="lv-stat-item"><span class="lv-stat-name">${s.name}</span><span class="lv-stat-val" style="color:${col};">${valStr}</span><div class="lv-stat-bar-wrap"><div class="lv-stat-bar-outer"><div class="lv-stat-bar-inner" style="width:${Math.min(100,spct)}%;background:${col};"></div></div></div><span class="lv-stat-pct" style="color:${col};">${spct}%</span></div>`;
+    return `<div class="lv-stat-item">
+      <span class="lv-stat-name">${s.name}</span>
+      <span class="lv-stat-val" style="color:${col};">${valStr}</span>
+      <div class="lv-stat-bar-wrap"><div class="lv-stat-bar-outer"><div class="lv-stat-bar-inner" style="width:${Math.min(100,spct)}%;background:${col};"></div></div></div>
+      <span class="lv-stat-pct" style="color:${col};">${spct}%</span>
+      <div style="display:flex;gap:4px;align-items:center;margin-left:8px;">${minusBtn}${plusBtn}${timeInput}</div>
+    </div>`;
   }).join('');
 
   // Fix 2: include achieved secrets; Fix 3: 44x44, max 5 per row
@@ -2112,6 +2142,75 @@ function lvTipMove(e){
 function lvTipHide(){getLvTip().style.display='none';}
 
 function openCtxById(id){openCtx(event,id);}
+
+// Library view stat controls
+function lvAdjStat(itemId,statIdx,delta){
+  const it=items.find(x=>x.id===itemId);if(!it||!it.stats)return;
+  const s=it.stats[statIdx];if(!s)return;
+  s.cur=Math.max(0,(s.cur??0)+delta);
+  _lvAutoUnlock(it,statIdx);
+  save();render();renderLvDetail(itemId);
+}
+function lvAdjStatTime(itemId,statIdx,inpId){
+  const it=items.find(x=>x.id===itemId);if(!it||!it.stats)return;
+  const s=it.stats[statIdx];if(!s)return;
+  const inp=document.getElementById(inpId);
+  const mins=parseFloat(inp?.value)||23;
+  s.cur=Math.max(0,(s.cur??0)+mins);
+  if(s.syncPlay){
+    it.hours=Math.round(((it.hours||0)*60+mins))/60;
+    it.hours=Math.round(it.hours*100)/100;
+    it.lastPlayed=today();
+  }
+  _lvAutoUnlock(it,statIdx);
+  save();render();renderLvDetail(itemId);
+}
+function lvAdjBuiltin(itemId,inpId){
+  const it=items.find(x=>x.id===itemId);if(!it)return;
+  const inp=document.getElementById(inpId);
+  const mins=parseFloat(inp?.value)||23;
+  it.hours=Math.round(((it.hours||0)*60+mins))/60;
+  it.hours=Math.round(it.hours*100)/100;
+  it.lastPlayed=today();
+  const totalMins=Math.round(it.hours*60);
+  let anyUnlocked=false;
+  (it.badges||[]).forEach(b=>{
+    if(b.checked||b.triggerStat!=='__totalPlayed')return;
+    if(totalMins>=(b.triggerVal??1)){b.checked=true;anyUnlocked=true;}
+  });
+  save();render();renderLvDetail(itemId);
+}
+function _lvAutoUnlock(it,statIdx){
+  (it.badges||[]).forEach(b=>{
+    if(b.checked)return;
+    if(b.triggerStat===undefined||b.triggerStat==='')return;
+    if(parseInt(b.triggerStat)!==statIdx)return;
+    const s=it.stats[statIdx];
+    if(s&&s.cur>=(b.triggerVal??1))b.checked=true;
+  });
+}
+
+function lvAdjTime(itemId, direction){
+  const it=items.find(x=>x.id===itemId);if(!it)return;
+  const inp=document.getElementById('lvTimeInp');
+  const mins=parseFloat(inp?.value)||23;
+  const delta=mins*direction;
+  it.hours=Math.max(0,Math.round(((it.hours||0)*60+delta))/60);
+  it.hours=Math.round(it.hours*100)/100;
+  if(direction>0) it.lastPlayed=today();
+  // Auto-unlock badges triggered by Total Played
+  const totalMins=Math.round(it.hours*60);
+  let anyUnlocked=false;
+  (it.badges||[]).forEach(b=>{
+    if(b.checked)return;
+    if(b.triggerStat!=='__totalPlayed')return;
+    if(totalMins>=(b.triggerVal??1)){b.checked=true;anyUnlocked=true;}
+  });
+  save();
+  renderLvDetail(itemId);
+  renderLvSidebar();
+  if(anyUnlocked)render();
+}
 
 document.getElementById('btnCardView').addEventListener('click',()=>setView('card'));
 document.getElementById('btnLibView').addEventListener('click',()=>{if(window.innerWidth>700)setView('library');});
